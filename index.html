@@ -377,8 +377,10 @@
     renderMyReports();
   });
 
-  // ---------- MATCHING (placeholder scoring — swap this function out
-  // once the ML team hands off their real model/endpoint) ----------
+  // ---------- MATCHING ----------
+  // This formula decides how well a lost item matches a found item.
+  // Update the point values below once your ML teammates tell you
+  // which factors matter most (out of 100).
   function computeMatchScore(lost, found) {
     let score = 0;
     if (lost.category && lost.category.toLowerCase() === found.category.toLowerCase()) score += 40;
@@ -442,7 +444,6 @@
       let extraHtml = "";
 
       if (item.type === "lost") {
-        // Find possible matches among found items reported by other users
         const candidates = allItems
           .filter(d => d.type === "found" && d.ownerUid !== currentUser.uid)
           .map(d => ({ ...d, score: computeMatchScore(item, d) }))
