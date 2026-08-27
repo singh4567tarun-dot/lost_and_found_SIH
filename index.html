@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lost and Found Network</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink: #1b2430;
+    --slate: #46536b;
+    --mist: #eef1f6;
+    --line: #dde3ec;
+    --teal: #0f6d66;
+    --teal-dark: #0b524d;
+    --amber: #e08a2c;
+    --white: #ffffff;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: 'Inter', sans-serif;
+    color: var(--ink);
+    background: var(--mist);
+  }
+  h1, h2, h3 { font-family: 'Poppins', sans-serif; margin: 0 0 8px; }
+
+  /* Navbar */
+  nav {
+    display: flex; align-items: center; justify-content: space-between;
+    background: var(--teal-dark); color: var(--white);
+    padding: 14px 24px; flex-wrap: wrap; gap: 10px;
+  }
+  nav .brand { font-family: 'Poppins', sans-serif; font-weight: 700; font-size: 1.2rem; }
+  nav .links { display: flex; gap: 6px; flex-wrap: wrap; }
+  nav button {
+    background: transparent; border: 1px solid rgba(255,255,255,0.3);
+    color: var(--white); padding: 8px 14px; border-radius: 6px;
+    cursor: pointer; font-size: 0.9rem; font-family: inherit;
+  }
+  nav button:hover { background: rgba(255,255,255,0.12); }
+  nav button.active { background: var(--amber); border-color: var(--amber); font-weight: 600; }
+
+  main { max-width: 800px; margin: 0 auto; padding: 30px 20px 60px; }
+  section { display: none; }
+  section.active { display: block; }
+
+  .card {
+    background: var(--white); border: 1px solid var(--line);
+    border-radius: 10px; padding: 20px; margin-bottom: 16px;
+  }
+
+  input, select, textarea {
+    width: 100%; padding: 10px; margin: 6px 0 14px;
+    border: 1px solid var(--line); border-radius: 6px;
+    font-family: inherit; font-size: 0.95rem;
+  }
+  label { font-weight: 600; font-size: 0.85rem; color: var(--slate); }
+
+  button.primary {
+    background: var(--teal); color: var(--white); border: none;
+    padding: 12px 20px; border-radius: 6px; font-size: 0.95rem;
+    font-weight: 600; cursor: pointer; width: 100%;
+  }
+  button.primary:hover { background: var(--teal-dark); }
+  button.primary:disabled { opacity: 0.6; cursor: not-allowed; }
+
+  #status { font-weight: 600; margin: 10px 0; min-height: 20px; }
+  .success { color: var(--teal); }
+  .error { color: #c0392b; }
+
+  .item-card { display: flex; gap: 14px; }
+  .item-card img { width: 90px; height: 90px; object-fit: cover; border-radius: 8px; background: var(--mist); }
+  .item-card .meta { flex: 1; }
+  .tag {
+    display: inline-block; font-size: 0.75rem; font-weight: 700;
+    padding: 3px 9px; border-radius: 20px; margin-bottom: 6px;
+    text-transform: uppercase; letter-spacing: 0.03em;
+  }
+  .tag.lost { background: #fdecec; color: #c0392b; }
+  .tag.found { background: #e7f5ee; color: var(--teal-dark); }
+
+  .empty-state { text-align: center; color: var(--slate); padding: 30px 0; }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="brand">🔎 Lost &amp; Found Network</div>
+  <div class="links">
+    <button data-page="home" class="active">Home</button>
+    <button data-page="report">Report Item</button>
+    <button data-page="browse">Browse</button>
+    <button data-page="auth" id="authNavBtn">Login / Sign Up</button>
+    <button id="logoutBtn" style="display:none;">Log Out</button>
+  </div>
+</nav>
+
+<main>
+
+  <!-- HOME -->
+  <section id="home" class="active">
+    <div class="card">
+      <h1>Reconnect people with what they've lost.</h1>
+      <p>Report a lost item, report something you found, and let the network do the matching. Use the nav above to get started.</p>
+      <p id="whoami" style="color: var(--slate); font-size: 0.9rem;">Not logged in yet.</p>
+    </div>
+  </section>
+
+  <!-- AUTH -->
+  <section id="auth">
+    <div class="card">
+      <h2>Login / Sign Up</h2>
+      <label>Email</label>
+      <input type="email" id="authEmail" placeholder="you@example.com">
+      <label>Password</label>
+      <input type="password" id="authPassword" placeholder="6+ characters">
+      <div style="display:flex; gap:10px;">
+        <button class="primary" id="signupBtn">Sign Up</button>
+        <button class="primary" id="loginBtn" style="background: var(--slate);">Log In</button>
+      </div>
+      <div id="authStatus"></div>
+    </div>
+  </section>
+
+  <!-- REPORT ITEM -->
+  <section id="report">
+    <div class="card">
+      <h2>Report an Item</h2>
+      <label>Type</label>
+      <select id="itemType">
+        <option value="lost">Lost — I lost something</option>
+        <option value="found">Found — I found something</option>
+      </select>
+
+      <label>Photo</label>
+      <input type="file" id="itemImage" accept="image/*">
+
+      <label>Category</label>
+      <input type="text" id="itemCategory" placeholder="e.g. Backpack, Phone, Wallet, ID Card">
+
+      <label>Colour</label>
+      <input type="text" id="itemColour" placeholder="e.g. Black, Navy Blue">
+
+      <label>Size</label>
+      <input type="text" id="itemSize" placeholder="e.g. Small, Medium, Large">
+
+      <label>Location</label>
+      <input type="text" id="itemLocation" placeholder="e.g. Library, Main Gate, Hostel Block C">
+
+      <label>Description</label>
+      <textarea id="itemDescription" rows="3" placeholder="Any extra details that could help identify it"></textarea>
+
+      <button class="primary" id="submitItemBtn">Submit Report</button>
+      <div id="reportStatus"></div>
+    </div>
+  </section>
+
+  <!-- BROWSE -->
+  <section id="browse">
+    <h2>All Reported Items</h2>
+    <div id="itemsList"></div>
+  </section>
+
+</main>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+  import {
+    getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword,
+    signOut, onAuthStateChanged
+  } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+  import {
+    getFirestore, collection, addDoc, onSnapshot, serverTimestamp
+  } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+  // ---- Your real project config ----
+  const firebaseConfig = {
+    apiKey: "AIzaSyC0gvOL_KFAbrFrcSRxOs42CRydQ56Wu8s",
+    authDomain: "lost-and-found-b577c.firebaseapp.com",
+    projectId: "lost-and-found-b577c",
+    storageBucket: "lost-and-found-b577c.firebasestorage.app",
+    messagingSenderId: "485396590412",
+    appId: "1:485396590412:web:765fb5bbd1c2833a5ee9e9"
+  };
+  const CLOUD_NAME = "rxkwngik";
+  const UPLOAD_PRESET = "lostfound_unsigned";
+
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+  const db = getFirestore(app);
+  const itemsRef = collection(db, "items");
+
+  let currentUser = null;
+
+  // ---------- NAVIGATION ----------
+  const navButtons = document.querySelectorAll("nav button[data-page]");
+  const sections = document.querySelectorAll("main section");
+
+  function showPage(pageId) {
+    sections.forEach(s => s.classList.toggle("active", s.id === pageId));
+    navButtons.forEach(b => b.classList.toggle("active", b.dataset.page === pageId));
+  }
+  navButtons.forEach(btn => {
+    btn.addEventListener("click", () => showPage(btn.dataset.page));
+  });
+
+  // ---------- AUTH ----------
+  const authEmail = document.getElementById("authEmail");
+  const authPassword = document.getElementById("authPassword");
+  const authStatus = document.getElementById("authStatus");
+  const authNavBtn = document.getElementById("authNavBtn");
+  const logoutBtn = document.getElementById("logoutBtn");
+  const whoami = document.getElementById("whoami");
+
+  document.getElementById("signupBtn").addEventListener("click", async () => {
+    try {
+      await createUserWithEmailAndPassword(auth, authEmail.value, authPassword.value);
+      authStatus.textContent = "Account created — you're logged in.";
+      authStatus.className = "success";
+    } catch (err) {
+      authStatus.textContent = "Error: " + err.message;
+      authStatus.className = "error";
+    }
+  });
+
+  document.getElementById("loginBtn").addEventListener("click", async () => {
+    try {
+      await signInWithEmailAndPassword(auth, authEmail.value, authPassword.value);
+      authStatus.textContent = "Logged in.";
+      authStatus.className = "success";
+    } catch (err) {
+      authStatus.textContent = "Error: " + err.message;
+      authStatus.className = "error";
+    }
+  });
+
+  logoutBtn.addEventListener("click", async () => {
+    await signOut(auth);
+    showPage("home");
+  });
+
+  onAuthStateChanged(auth, (user) => {
+    currentUser = user;
+    if (user) {
+      whoami.textContent = "Logged in as: " + user.email;
+      authNavBtn.style.display = "none";
+      logoutBtn.style.display = "inline-block";
+    } else {
+      whoami.textContent = "Not logged in yet.";
+      authNavBtn.style.display = "inline-block";
+      logoutBtn.style.display = "none";
+    }
+  });
+
+  // ---------- REPORT ITEM (Cloudinary + Firestore) ----------
+  async function uploadImage(file) {
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("upload_preset", UPLOAD_PRESET);
+    const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`, {
+      method: "POST", body: formData
+    });
+    if (!res.ok) throw new Error("Image upload failed");
+    const data = await res.json();
+    return data.secure_url;
+  }
+
+  const reportStatus = document.getElementById("reportStatus");
+  const submitItemBtn = document.getElementById("submitItemBtn");
+
+  submitItemBtn.addEventListener("click", async () => {
+    if (!currentUser) {
+      reportStatus.textContent = "Please log in first (see Login / Sign Up).";
+      reportStatus.className = "error";
+      showPage("auth");
+      return;
+    }
+
+    const type = document.getElementById("itemType").value;
+    const category = document.getElementById("itemCategory").value.trim();
+    const colour = document.getElementById("itemColour").value.trim();
+    const size = document.getElementById("itemSize").value.trim();
+    const location = document.getElementById("itemLocation").value.trim();
+    const description = document.getElementById("itemDescription").value.trim();
+    const imageFile = document.getElementById("itemImage").files[0];
+
+    if (!category || !location) {
+      reportStatus.textContent = "Category and location are required.";
+      reportStatus.className = "error";
+      return;
+    }
+
+    submitItemBtn.disabled = true;
+    reportStatus.textContent = "Submitting...";
+    reportStatus.className = "";
+
+    try {
+      let imageUrl = "";
+      if (imageFile) {
+        imageUrl = await uploadImage(imageFile);
+      }
+
+      await addDoc(itemsRef, {
+        type, category, colour, size, location, description,
+        image: imageUrl,
+        ownerUid: currentUser.uid,
+        ownerEmail: currentUser.email,
+        status: "open",
+        createdAt: serverTimestamp()
+      });
+
+      reportStatus.textContent = "Item reported successfully!";
+      reportStatus.className = "success";
+      document.getElementById("itemCategory").value = "";
+      document.getElementById("itemColour").value = "";
+      document.getElementById("itemSize").value = "";
+      document.getElementById("itemLocation").value = "";
+      document.getElementById("itemDescription").value = "";
+      document.getElementById("itemImage").value = "";
+    } catch (err) {
+      reportStatus.textContent = "Error: " + err.message;
+      reportStatus.className = "error";
+    } finally {
+      submitItemBtn.disabled = false;
+    }
+  });
+
+  // ---------- BROWSE (live list) ----------
+  const itemsList = document.getElementById("itemsList");
+
+  onSnapshot(itemsRef, (snapshot) => {
+    if (snapshot.empty) {
+      itemsList.innerHTML = '<div class="empty-state">No items reported yet. Be the first.</div>';
+      return;
+    }
+    itemsList.innerHTML = "";
+    snapshot.forEach((doc) => {
+      const d = doc.data();
+      const card = document.createElement("div");
+      card.className = "card item-card";
+      card.innerHTML = `
+        <img src="${d.image || ''}" alt="">
+        <div class="meta">
+          <span class="tag ${d.type}">${d.type}</span>
+          <h3>${d.category}</h3>
+          <p style="margin:2px 0; color: var(--slate); font-size:0.9rem;">
+            ${d.colour ? d.colour + " · " : ""}${d.size ? d.size + " · " : ""}${d.location}
+          </p>
+          <p style="margin:2px 0; font-size:0.9rem;">${d.description || ""}</p>
+        </div>
+      `;
+      itemsList.appendChild(card);
+    });
+  });
+</script>
+
+</body>
+</html>
