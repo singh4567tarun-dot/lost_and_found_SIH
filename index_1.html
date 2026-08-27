@@ -172,6 +172,11 @@
 
 </main>
 
+<div id="toast" style="display:none; position:fixed; bottom:24px; left:50%; transform:translateX(-50%); background:var(--ink); color:white; padding:12px 18px; border-radius:8px; display:flex; align-items:center; gap:16px; box-shadow:0 4px 16px rgba(0,0,0,0.25); z-index:100;">
+  <span id="toastMessage" style="font-size:0.9rem;"></span>
+  <button id="toastUndoBtn" style="width:auto; padding:6px 14px; font-size:0.85rem; background:var(--amber); color:white; border:none; border-radius:5px; cursor:pointer; font-weight:600;">Undo</button>
+</div>
+
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
   import {
@@ -179,7 +184,7 @@
     signOut, onAuthStateChanged
   } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
   import {
-    getFirestore, collection, addDoc, onSnapshot, serverTimestamp
+    getFirestore, collection, addDoc, onSnapshot, serverTimestamp, deleteDoc, doc
   } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
   // ---- Your real project config ----
@@ -340,7 +345,7 @@
   const myItemsList = document.getElementById("myItemsList");
   let allItems = []; // every item, kept in memory so we can compute matches locally
 
-  function itemCardHtml(id, d, extraHtml = "") {
+  function itemCardHtml(id, d, extraHtml = "", showDelete = false) {
     return `
       <div class="card item-card" style="flex-wrap:wrap;">
         <img src="${d.image || ''}" alt="">
@@ -351,6 +356,7 @@
             ${d.colour ? d.colour + " · " : ""}${d.size ? d.size + " · " : ""}${d.location}
           </p>
           <p style="margin:2px 0; font-size:0.9rem;">${d.description || ""}</p>
+          ${showDelete ? `<button class="delete-btn" data-id="${id}" data-category="${d.category}" style="width:auto; margin-top:8px; padding:6px 12px; font-size:0.8rem; background:#fdecec; color:#c0392b; border:1px solid #f5c6c6; border-radius:5px; cursor:pointer;">Delete Report</button>` : ""}
         </div>
         ${extraHtml}
       </div>
@@ -385,14 +391,48 @@
     return score;
   }
 
-  // ---------- MY REPORTS + Possible Matches + Contact reveal ----------
+  // ---------- MY REPORTS + Possible Matches + Contact reveal + Delete/Undo ----------
+  const pendingDeletes = {}; // itemId -> timeoutId, items in here are hidden but not yet deleted
+  const toast = document.getElementById("toast");
+  const toastMessage = document.getElementById("toastMessage");
+  const toastUndoBtn = document.getElementById("toastUndoBtn");
+  let toastTargetId = null;
+
+  function startDelete(id, label) {
+    // Hide immediately from the UI without touching Firestore yet
+    renderMyReports();
+
+    toastTargetId = id;
+    toastMessage.textContent = `"${label}" deleted.`;
+    toast.style.display = "flex";
+
+    pendingDeletes[id] = setTimeout(async () => {
+      toast.style.display = "none";
+      try {
+        await deleteDoc(doc(db, "items", id));
+      } catch (err) {
+        alert("Couldn't delete: " + err.message);
+      }
+      delete pendingDeletes[id];
+    }, 5000);
+  }
+
+  toastUndoBtn.addEventListener("click", () => {
+    if (toastTargetId && pendingDeletes[toastTargetId]) {
+      clearTimeout(pendingDeletes[toastTargetId]);
+      delete pendingDeletes[toastTargetId];
+    }
+    toast.style.display = "none";
+    renderMyReports();
+  });
+
   function renderMyReports() {
     if (!currentUser) {
       myItemsList.innerHTML = '<div class="empty-state">Log in to see your reports.</div>';
       return;
     }
 
-    const mine = allItems.filter(d => d.ownerUid === currentUser.uid);
+    const mine = allItems.filter(d => d.ownerUid === currentUser.uid && !pendingDeletes[d.id]);
     if (mine.length === 0) {
       myItemsList.innerHTML = '<div class="empty-state">You haven\'t reported anything yet.</div>';
       return;
@@ -427,8 +467,15 @@
         }
       }
 
-      return itemCardHtml(item.id, item, extraHtml);
+      return itemCardHtml(item.id, item, extraHtml, true);
     }).join("");
+
+    // Wire up Delete buttons (soft delete — 5 second undo window)
+    document.querySelectorAll(".delete-btn").forEach(btn => {
+      btn.addEventListener("click", () => {
+        startDelete(btn.dataset.id, btn.dataset.category);
+      });
+    });
 
     // Wire up Contact buttons (reveal the finder's email on click)
     document.querySelectorAll(".contact-btn").forEach(btn => {
