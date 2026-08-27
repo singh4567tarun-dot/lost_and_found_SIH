@@ -92,6 +92,7 @@
     <button data-page="home" class="active">Home</button>
     <button data-page="report">Report Item</button>
     <button data-page="browse">Browse</button>
+    <button data-page="myreports">My Reports</button>
     <button data-page="auth" id="authNavBtn">Login / Sign Up</button>
     <button id="logoutBtn" style="display:none;">Log Out</button>
   </div>
@@ -161,6 +162,12 @@
   <section id="browse">
     <h2>All Reported Items</h2>
     <div id="itemsList"></div>
+  </section>
+
+  <!-- MY REPORTS -->
+  <section id="myreports">
+    <h2>My Reports</h2>
+    <div id="myItemsList"></div>
   </section>
 
 </main>
@@ -252,6 +259,7 @@
       authNavBtn.style.display = "inline-block";
       logoutBtn.style.display = "none";
     }
+    if (typeof renderMyReports === "function") renderMyReports();
   });
 
   // ---------- REPORT ITEM (Cloudinary + Firestore) ----------
@@ -327,20 +335,14 @@
     }
   });
 
-  // ---------- BROWSE (live list) ----------
+  // ---------- BROWSE (live list) + shared item cache ----------
   const itemsList = document.getElementById("itemsList");
+  const myItemsList = document.getElementById("myItemsList");
+  let allItems = []; // every item, kept in memory so we can compute matches locally
 
-  onSnapshot(itemsRef, (snapshot) => {
-    if (snapshot.empty) {
-      itemsList.innerHTML = '<div class="empty-state">No items reported yet. Be the first.</div>';
-      return;
-    }
-    itemsList.innerHTML = "";
-    snapshot.forEach((doc) => {
-      const d = doc.data();
-      const card = document.createElement("div");
-      card.className = "card item-card";
-      card.innerHTML = `
+  function itemCardHtml(id, d, extraHtml = "") {
+    return `
+      <div class="card item-card" style="flex-wrap:wrap;">
         <img src="${d.image || ''}" alt="">
         <div class="meta">
           <span class="tag ${d.type}">${d.type}</span>
@@ -350,10 +352,92 @@
           </p>
           <p style="margin:2px 0; font-size:0.9rem;">${d.description || ""}</p>
         </div>
-      `;
-      itemsList.appendChild(card);
-    });
+        ${extraHtml}
+      </div>
+    `;
+  }
+
+  onSnapshot(itemsRef, (snapshot) => {
+    allItems = [];
+    snapshot.forEach((doc) => allItems.push({ id: doc.id, ...doc.data() }));
+
+    // Render Browse
+    if (allItems.length === 0) {
+      itemsList.innerHTML = '<div class="empty-state">No items reported yet. Be the first.</div>';
+    } else {
+      itemsList.innerHTML = allItems.map(d => itemCardHtml(d.id, d)).join("");
+    }
+
+    renderMyReports();
   });
+
+  // ---------- MATCHING (placeholder scoring — swap this function out
+  // once the ML team hands off their real model/endpoint) ----------
+  function computeMatchScore(lost, found) {
+    let score = 0;
+    if (lost.category && lost.category.toLowerCase() === found.category.toLowerCase()) score += 40;
+    if (lost.colour && found.colour && lost.colour.toLowerCase() === found.colour.toLowerCase()) score += 25;
+    if (lost.location && found.location && lost.location.toLowerCase() === found.location.toLowerCase()) score += 20;
+    const lostWords = (lost.description || "").toLowerCase().split(/\W+/).filter(Boolean);
+    const foundWords = (found.description || "").toLowerCase().split(/\W+/).filter(Boolean);
+    const overlap = lostWords.filter(w => foundWords.includes(w));
+    if (overlap.length > 0) score += Math.min(15, overlap.length * 5);
+    return score;
+  }
+
+  // ---------- MY REPORTS + Possible Matches + Contact reveal ----------
+  function renderMyReports() {
+    if (!currentUser) {
+      myItemsList.innerHTML = '<div class="empty-state">Log in to see your reports.</div>';
+      return;
+    }
+
+    const mine = allItems.filter(d => d.ownerUid === currentUser.uid);
+    if (mine.length === 0) {
+      myItemsList.innerHTML = '<div class="empty-state">You haven\'t reported anything yet.</div>';
+      return;
+    }
+
+    myItemsList.innerHTML = mine.map(item => {
+      let extraHtml = "";
+
+      if (item.type === "lost") {
+        // Find possible matches among found items reported by other users
+        const candidates = allItems
+          .filter(d => d.type === "found" && d.ownerUid !== currentUser.uid)
+          .map(d => ({ ...d, score: computeMatchScore(item, d) }))
+          .filter(d => d.score > 0)
+          .sort((a, b) => b.score - a.score)
+          .slice(0, 3);
+
+        if (candidates.length > 0) {
+          extraHtml = `
+            <div style="width:100%; margin-top:12px; padding-top:12px; border-top:1px solid var(--line);">
+              <strong style="font-size:0.85rem; color: var(--slate);">Possible Matches</strong>
+              ${candidates.map(c => `
+                <div style="display:flex; align-items:center; justify-content:space-between; margin-top:8px; padding:8px; background:var(--mist); border-radius:6px;">
+                  <span style="font-size:0.85rem;">${c.category} — ${c.location} <strong>(${c.score}% match)</strong></span>
+                  <button class="contact-btn" data-email="${c.ownerEmail}" style="width:auto; padding:6px 10px; font-size:0.8rem; background:var(--amber); color:white; border:none; border-radius:5px; cursor:pointer;">Contact Finder</button>
+                </div>
+              `).join("")}
+            </div>
+          `;
+        } else {
+          extraHtml = `<p style="width:100%; margin-top:10px; font-size:0.85rem; color:var(--slate);">No matches yet — check back later.</p>`;
+        }
+      }
+
+      return itemCardHtml(item.id, item, extraHtml);
+    }).join("");
+
+    // Wire up Contact buttons (reveal the finder's email on click)
+    document.querySelectorAll(".contact-btn").forEach(btn => {
+      btn.addEventListener("click", () => {
+        btn.textContent = btn.dataset.email;
+        btn.style.background = "var(--teal)";
+      });
+    });
+  }
 </script>
 
 </body>
