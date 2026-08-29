@@ -1,0 +1,1980 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FindIt — Smart AI Lost & Found Network</title>
+<script>
+  // Apply saved theme immediately, before first paint, to avoid a flash of the wrong theme.
+  (function() {
+    try {
+      if (localStorage.getItem("ff_theme") === "dark") {
+        document.documentElement.classList.add("dark-theme");
+      }
+    } catch (e) {}
+  })();
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --primary: #4f46e5;
+    --primary-hover: #4338ca;
+    --primary-light: #e0e7ff;
+    --slate-900: #0f172a;
+    --slate-800: #1e293b;
+    --slate-700: #334155;
+    --slate-600: #475569;
+    --slate-500: #64748b;
+    --slate-400: #94a3b8;
+    --slate-200: #e2e8f0;
+    --slate-100: #f1f5f9;
+    --slate-50: #f8fafc;
+    --emerald-600: #059669;
+    --emerald-500: #10b981;
+    --emerald-50: #ecfdf5;
+    --rose-600: #e11d48;
+    --rose-500: #f43f5e;
+    --rose-50: #fff1f2;
+    --amber-500: #f59e0b;
+    --amber-50: #fffbeb;
+    --slate-300: #cbd5e1;
+    --white: #ffffff;
+    --radius-lg: 16px;
+    --radius-md: 10px;
+    --radius-sm: 6px;
+    --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+    --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.08), 0 2px 4px -2px rgb(0 0 0 / 0.06);
+    --shadow-lg: 0 10px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.08);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Plus Jakarta Sans', 'Inter', sans-serif;
+    color: var(--slate-800);
+    background: #f3f6fc;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    line-height: 1.5;
+  }
+
+  /* Header & Navigation */
+  header {
+    background: var(--white);
+    border-bottom: 1px solid var(--slate-200);
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    box-shadow: var(--shadow-sm);
+  }
+  .nav-container {
+    max-width: 1140px;
+    margin: 0 auto;
+    padding: 12px 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    row-gap: 8px;
+  }
+  .brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-weight: 800;
+    font-size: 1.25rem;
+    color: var(--slate-900);
+    text-decoration: none;
+    cursor: pointer;
+  }
+  .brand-icon {
+    width: 38px;
+    height: 38px;
+    background: linear-gradient(135deg, var(--primary), #818cf8);
+    color: var(--white);
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 10px rgba(79, 70, 229, 0.3);
+  }
+  .nav-links {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    flex-wrap: wrap;
+    row-gap: 8px;
+  }
+  .nav-btn {
+    background: transparent;
+    border: none;
+    color: var(--slate-600);
+    padding: 8px 12px;
+    border-radius: var(--radius-sm);
+    font-weight: 600;
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    white-space: nowrap;
+  }
+  .nav-btn:hover {
+    color: var(--primary);
+    background: var(--slate-100);
+  }
+  .nav-btn.active {
+    background: var(--primary-light);
+    color: var(--primary);
+  }
+  .nav-btn.primary-cta {
+    background: var(--primary);
+    color: var(--white);
+  }
+  .nav-btn.primary-cta:hover {
+    background: var(--primary-hover);
+    color: var(--white);
+  }
+  .header-whoami {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--slate-600);
+    background: var(--slate-100);
+    border: 1px solid var(--slate-200);
+    padding: 6px 12px;
+    border-radius: 20px;
+    white-space: nowrap;
+  }
+  .header-whoami .college-part {
+    color: var(--primary);
+  }
+
+  .mobile-toggle {
+    display: none;
+    background: none;
+    border: none;
+    color: var(--slate-700);
+    cursor: pointer;
+    padding: 6px;
+  }
+
+  .icon-toggle-btn {
+    width: 38px;
+    height: 38px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    border: 1px solid var(--slate-200);
+    background: var(--white);
+    color: var(--slate-600);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    flex-shrink: 0;
+  }
+  .icon-toggle-btn:hover {
+    background: var(--slate-100);
+    color: var(--primary);
+    border-color: var(--primary);
+  }
+
+  /* Main Container */
+  main {
+    max-width: 1140px;
+    width: 100%;
+    margin: 0 auto;
+    padding: 32px 24px 60px;
+    flex: 1;
+  }
+
+  section { display: none; }
+  section.active {
+    display: block;
+    animation: fadeIn 0.3s ease-in-out;
+  }
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(6px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* Components & Layouts */
+  .card {
+    background: var(--white);
+    border: 1px solid var(--slate-200);
+    border-radius: var(--radius-lg);
+    padding: 28px;
+    box-shadow: var(--shadow-sm);
+    margin-bottom: 24px;
+  }
+
+  /* Auth: separate, standalone Log In / Sign Up pages */
+  .auth-solo-wrap {
+    max-width: 440px;
+    margin: 56px auto;
+    padding: 0 20px;
+  }
+  .auth-solo-card {
+    background: var(--white);
+    border: 1px solid var(--slate-200);
+    border-top: 4px solid var(--auth-accent);
+    border-radius: var(--radius-lg);
+    padding: 32px 30px 28px;
+    box-shadow: var(--shadow-sm);
+    text-align: center;
+  }
+  .auth-solo-card form {
+    text-align: left;
+  }
+  .auth-solo-card.login-solo { --auth-accent: var(--primary); }
+  .auth-solo-card.signup-solo { --auth-accent: var(--emerald-500); }
+  .auth-solo-icon {
+    width: 46px;
+    height: 46px;
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: color-mix(in srgb, var(--auth-accent) 14%, var(--white));
+    color: var(--auth-accent);
+    margin: 0 auto 16px;
+  }
+  .auth-solo-card h2 {
+    font-size: 1.5rem;
+    font-weight: 800;
+    margin-bottom: 4px;
+  }
+  .auth-solo-sub {
+    color: var(--slate-500);
+    font-size: 0.9rem;
+    margin-bottom: 22px;
+  }
+  .auth-solo-card.login-solo button.btn-primary {
+    background: var(--auth-accent);
+    box-shadow: 0 2px 6px color-mix(in srgb, var(--auth-accent) 35%, transparent);
+  }
+  .auth-solo-card.login-solo button.btn-primary:hover { background: var(--primary-hover); }
+  .auth-solo-card.signup-solo button.btn-primary {
+    background: var(--auth-accent);
+    box-shadow: 0 2px 6px color-mix(in srgb, var(--auth-accent) 35%, transparent);
+  }
+  .auth-solo-card.signup-solo button.btn-primary:hover { background: var(--emerald-600); }
+  .auth-switch-link {
+    text-align: center;
+    margin-top: 18px;
+    font-size: 0.88rem;
+    color: var(--slate-500);
+  }
+  .auth-switch-link button {
+    background: none;
+    border: none;
+    padding: 0;
+    color: var(--auth-accent);
+    font-weight: 700;
+    font-size: inherit;
+    font-family: inherit;
+    cursor: pointer;
+    text-decoration: underline;
+  }
+
+  /* Hero Section */
+  .hero-card {
+    background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%);
+    color: #ffffff;
+    padding: 48px 40px;
+    border-radius: 20px;
+    position: relative;
+    overflow: hidden;
+    box-shadow: var(--shadow-lg);
+    margin-bottom: 32px;
+  }
+  .hero-card::after {
+    content: '';
+    position: absolute;
+    top: -50%;
+    right: -10%;
+    width: 400px;
+    height: 400px;
+    background: radial-gradient(circle, rgba(99, 102, 241, 0.25) 0%, rgba(0,0,0,0) 70%);
+    pointer-events: none;
+  }
+  .hero-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: #a5b4fc;
+    margin-bottom: 16px;
+  }
+  .hero-card h1 {
+    font-size: 2.5rem;
+    font-weight: 800;
+    line-height: 1.2;
+    margin-bottom: 16px;
+    letter-spacing: -0.02em;
+    color: #ffffff;
+  }
+  .hero-card p {
+    font-size: 1.05rem;
+    color: #cbd5e1;
+    max-width: 600px;
+    margin-bottom: 28px;
+  }
+  .hero-actions {
+    display: flex;
+    gap: 14px;
+    flex-wrap: wrap;
+  }
+
+  /* Stats Bar */
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 18px;
+    margin-bottom: 32px;
+  }
+  .stat-card {
+    background: var(--white);
+    border: 1px solid var(--slate-200);
+    border-radius: var(--radius-md);
+    padding: 20px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    box-shadow: var(--shadow-sm);
+  }
+  .stat-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .stat-val { font-size: 1.5rem; font-weight: 800; color: var(--slate-900); }
+  .stat-lbl { font-size: 0.825rem; font-weight: 600; color: var(--slate-500); }
+
+  /* Section Titles */
+  .section-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 20px;
+  }
+  .section-title {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--slate-900);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  /* Forms & Controls */
+  .form-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+  }
+  .form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-bottom: 14px;
+  }
+  .form-group.full { grid-column: span 2; }
+  label {
+    font-weight: 600;
+    font-size: 0.85rem;
+    color: var(--slate-700);
+  }
+  input[type="text"], input[type="email"], input[type="password"], select, textarea {
+    width: 100%;
+    padding: 11px 14px;
+    border: 1px solid var(--slate-300);
+    border-radius: var(--radius-sm);
+    font-family: inherit;
+    font-size: 0.95rem;
+    color: var(--slate-800);
+    background: var(--white);
+    transition: all 0.2s;
+  }
+  input:focus, select:focus, textarea:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px var(--primary-light);
+  }
+
+  /* Custom Image Upload Dropzone */
+  .upload-zone {
+    border: 2px dashed var(--slate-300);
+    border-radius: var(--radius-md);
+    padding: 24px;
+    text-align: center;
+    background: var(--slate-50);
+    cursor: pointer;
+    transition: all 0.2s;
+    position: relative;
+  }
+  .upload-zone:hover {
+    border-color: var(--primary);
+    background: var(--primary-light);
+  }
+  .upload-zone input[type="file"] {
+    position: absolute;
+    top: 0; left: 0; width: 100%; height: 100%;
+    opacity: 0;
+    cursor: pointer;
+  }
+  .preview-img {
+    max-height: 120px;
+    border-radius: 8px;
+    margin-top: 10px;
+    display: none;
+    box-shadow: var(--shadow-sm);
+  }
+
+  /* Buttons */
+  button.btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 11px 20px;
+    border-radius: var(--radius-sm);
+    font-size: 0.95rem;
+    font-weight: 600;
+    cursor: pointer;
+    border: none;
+    transition: all 0.2s;
+    text-decoration: none;
+  }
+  button.btn-primary {
+    background: var(--primary);
+    color: var(--white);
+    box-shadow: 0 2px 6px rgba(79, 70, 229, 0.3);
+  }
+  button.btn-primary:hover { background: var(--primary-hover); }
+  button.btn:active { transform: scale(0.97); }
+  button.btn:disabled {
+    opacity: 0.65;
+    cursor: not-allowed;
+    transform: none;
+  }
+  button.btn-secondary {
+    background: var(--white);
+    color: var(--slate-700);
+    border: 1px solid var(--slate-300);
+  }
+  button.btn-secondary:hover { background: var(--slate-100); }
+  button:disabled { opacity: 0.65; cursor: not-allowed; }
+
+  /* Search & Filter Bar */
+  .filter-bar {
+    background: var(--white);
+    border: 1px solid var(--slate-200);
+    border-radius: var(--radius-md);
+    padding: 16px;
+    margin-bottom: 24px;
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    box-shadow: var(--shadow-sm);
+  }
+  .search-input-wrap {
+    flex: 1;
+    min-width: 240px;
+    position: relative;
+  }
+  .search-icon {
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--slate-400);
+  }
+  .search-input-wrap input {
+    padding-left: 38px;
+    margin: 0;
+  }
+  .filter-select {
+    width: auto;
+    min-width: 150px;
+    margin: 0;
+  }
+
+  /* Item Cards Grid */
+  .items-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    grid-auto-rows: 1fr;
+    gap: 20px;
+    align-items: stretch;
+  }
+  .item-card {
+    background: var(--white);
+    border: 1px solid var(--slate-200);
+    border-radius: var(--radius-md);
+    overflow: hidden;
+    box-shadow: var(--shadow-sm);
+    transition: transform 0.2s, box-shadow 0.2s;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+  }
+  .item-card:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--shadow-lg);
+  }
+  .item-thumb-wrap {
+    height: 180px;
+    width: 100%;
+    background: var(--slate-100);
+    position: relative;
+    overflow: hidden;
+  }
+  .item-thumb {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  .item-no-thumb {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--slate-400);
+    background: var(--slate-100);
+  }
+  .tag-badge {
+    position: absolute;
+    top: 12px;
+    left: 12px;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    box-shadow: var(--shadow-sm);
+  }
+  .tag-badge.lost { background: var(--rose-500); color: var(--white); }
+  .tag-badge.found { background: var(--emerald-500); color: var(--white); }
+
+  .item-body {
+    padding: 18px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+  }
+  .item-category {
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: var(--primary);
+    text-transform: uppercase;
+    margin-bottom: 4px;
+  }
+  .item-title {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--slate-900);
+    margin-bottom: 8px;
+  }
+  .item-meta {
+    font-size: 0.85rem;
+    color: var(--slate-600);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 6px;
+  }
+  .item-desc {
+    font-size: 0.875rem;
+    color: var(--slate-600);
+    margin-top: 6px;
+    margin-bottom: 14px;
+    flex: 1;
+  }
+
+  /* Matching Box inside My Reports */
+  .match-section {
+    margin-top: 14px;
+    padding-top: 14px;
+    border-top: 1px solid var(--slate-200);
+  }
+  .match-card {
+    background: var(--slate-50);
+    border: 1px solid var(--slate-200);
+    border-radius: var(--radius-sm);
+    padding: 12px;
+    margin-top: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+  }
+  .match-score {
+    background: var(--emerald-50);
+    color: var(--emerald-600);
+    border: 1px solid #a7f3d0;
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-weight: 700;
+    font-size: 0.75rem;
+  }
+
+  /* Dashboard card action row — always pinned to the card's bottom edge,
+     regardless of how much description/match content sits above it. */
+  .item-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: auto;
+    padding-top: 14px;
+  }
+  .item-actions .btn {
+    flex: 1;
+    padding: 8px 12px;
+    font-size: 0.82rem;
+  }
+  .item-actions .delete-btn {
+    background: rgba(225, 29, 72, 0.1);
+    color: var(--rose-600);
+    border: 1px solid rgba(225, 29, 72, 0.3);
+  }
+  .item-actions .delete-btn:hover {
+    background: rgba(225, 29, 72, 0.18);
+  }
+  .item-actions .resolve-btn {
+    background: rgba(16, 185, 129, 0.1);
+    color: var(--emerald-600);
+    border: 1px solid rgba(16, 185, 129, 0.28);
+  }
+  .item-actions .resolve-btn:hover {
+    background: rgba(16, 185, 129, 0.18);
+  }
+  .item-actions .resolve-btn[data-status="resolved"] {
+    background: rgba(245, 158, 11, 0.1);
+    color: var(--amber-500);
+    border-color: rgba(245, 158, 11, 0.3);
+  }
+  .item-actions .resolve-btn[data-status="resolved"]:hover {
+    background: rgba(245, 158, 11, 0.18);
+  }
+
+  /* Empty States & Status Messages */
+  .empty-state {
+    text-align: center;
+    padding: 48px 20px;
+    color: var(--slate-500);
+    background: var(--white);
+    border: 1px dashed var(--slate-300);
+    border-radius: var(--radius-md);
+  }
+  .empty-state svg { margin-bottom: 12px; color: var(--slate-400); }
+
+  #status, #reportStatus, #loginStatus, #signupStatus {
+    font-size: 0.875rem;
+    font-weight: 600;
+    margin-top: 10px;
+    padding: 10px 14px;
+    border-radius: var(--radius-sm);
+    display: none;
+  }
+  #status.success, #reportStatus.success, #loginStatus.success, #signupStatus.success {
+    display: block;
+    background: var(--emerald-50);
+    color: var(--emerald-600);
+    border: 1px solid #a7f3d0;
+  }
+  #status.error, #reportStatus.error, #loginStatus.error, #signupStatus.error {
+    display: block;
+    background: var(--rose-50);
+    color: var(--rose-600);
+    border: 1px solid #fecdd3;
+  }
+
+  /* How It Works Grid */
+  .steps-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 20px;
+    margin-top: 16px;
+  }
+  .step-card {
+    background: var(--slate-50);
+    border-radius: var(--radius-md);
+    padding: 20px;
+    position: relative;
+  }
+  .step-num {
+    font-size: 1.5rem;
+    font-weight: 800;
+    color: var(--primary);
+    margin-bottom: 8px;
+  }
+
+  /* Responsive Rules */
+  @media (max-width: 768px) {
+    .nav-links {
+      display: none;
+      width: 100%;
+      flex-direction: column;
+      align-items: stretch;
+      padding-top: 12px;
+      margin-top: 8px;
+      border-top: 1px solid var(--slate-200);
+      gap: 4px;
+    }
+    .nav-links.show { display: flex; }
+    .nav-links .nav-btn { justify-content: flex-start; padding: 10px 12px; }
+    .mobile-toggle { display: block; }
+    .form-grid { grid-template-columns: 1fr; }
+    .form-group.full { grid-column: span 1; }
+    .hero-card h1 { font-size: 1.8rem; }
+  }
+
+  /* Status badges */
+  .status-badge {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    font-size: 0.7rem;
+    font-weight: 700;
+    padding: 4px 10px;
+    border-radius: 20px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    box-shadow: var(--shadow-sm);
+    z-index: 2;
+  }
+  .status-badge.open { background: var(--amber-50); color: var(--amber-500); }
+  .status-badge.resolved { background: var(--emerald-50); color: var(--emerald-600); }
+
+  .message-btn { margin-top: 10px; padding: 6px 14px; font-size: 0.8rem; }
+
+  /* Messages / chat UI */
+  .conversation-item {
+    display: flex; justify-content: space-between; align-items: center;
+    background: var(--white); border: 1px solid var(--slate-200); border-radius: var(--radius-md);
+    padding: 14px 16px; margin-bottom: 10px; cursor: pointer;
+  }
+  .conversation-item:hover { border-color: var(--primary); }
+  .chat-panel {
+    background: var(--white); border: 1px solid var(--slate-200); border-radius: var(--radius-md);
+    display: flex; flex-direction: column; height: 480px;
+  }
+  .chat-header {
+    padding: 12px 16px; border-bottom: 1px solid var(--slate-200);
+    display: flex; align-items: center; gap: 10px;
+  }
+  .chat-messages { flex: 1; overflow-y: auto; padding: 14px 16px; display: flex; flex-direction: column; gap: 8px; }
+  .chat-bubble { max-width: 75%; padding: 8px 12px; border-radius: 12px; font-size: 0.88rem; line-height: 1.4; }
+  .chat-bubble.mine { align-self: flex-end; background: var(--primary); color: white; }
+  .chat-bubble.theirs { align-self: flex-start; background: var(--slate-100); color: var(--slate-800); }
+  .chat-input-row { display: flex; gap: 8px; padding: 12px 16px; border-top: 1px solid var(--slate-200); }
+  .chat-input-row input { flex: 1; }
+
+  /* Dark theme — remapping the existing CSS variables covers most components.
+     Applied to <html> (not <body>) so it can be set instantly by an inline
+     script in <head>, before <body> exists, avoiding a flash of the wrong theme. */
+  html.dark-theme {
+    --white: #1e293b;
+    --slate-50: #0f172a;
+    --slate-100: #1e293b;
+    --slate-200: #334155;
+    --slate-400: #94a3b8;
+    --slate-500: #cbd5e1;
+    --slate-600: #e2e8f0;
+    --slate-700: #f1f5f9;
+    --slate-800: #f8fafc;
+    --slate-900: #ffffff;
+    background: #0f172a;
+  }
+  html.dark-theme body {
+    background: #0f172a;
+  }
+  html.dark-theme input,
+  html.dark-theme select,
+  html.dark-theme textarea {
+    background: #0f172a;
+    color: #f1f5f9;
+    border-color: #334155;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="nav-container">
+    <a class="brand" data-page="home">
+      <div class="brand-icon">
+        <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"></circle><path d="m21 21-4.35-4.35"></path></svg>
+      </div>
+      <span>FindIt</span>
+    </a>
+    <button class="mobile-toggle" id="mobileMenuBtn">
+      <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h16"></path></svg>
+    </button>
+    <div class="nav-links" id="navLinks">
+      <button class="nav-btn active" data-page="home">Home</button>
+      <button class="nav-btn" data-page="browse">Browse All Items</button>
+      <button class="nav-btn" data-page="report">Report Item</button>
+      <button class="nav-btn" data-page="myreports">My Dashboard</button>
+      <button class="nav-btn" data-page="messages">Messages</button>
+      <button class="icon-toggle-btn" id="darkModeToggle" type="button" title="Toggle dark theme">
+        <svg id="darkModeIcon" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"></path></svg>
+      </button>
+      <span id="headerWhoami" class="header-whoami" style="display:none;"></span>
+      <button class="nav-btn primary-cta" data-page="login" id="authNavBtn">Log In / Sign Up</button>
+      <button class="nav-btn btn-secondary" id="logoutBtn" style="display:none;">Log Out</button>
+    </div>
+  </div>
+</header>
+
+<main>
+
+  <!-- HOME SECTION -->
+  <section id="home" class="active">
+    <div class="hero-card">
+      <h1>Reconnecting lost belongings with their owners.</h1>
+      <p>Report lost items, list found objects, and leverage automated attribute matching to recover items quickly.</p>
+      <div class="hero-actions">
+        <button class="btn btn-primary" onclick="showPage('report')">
+          <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 4v16m-8-8h16"></path></svg>
+          Report an Item
+        </button>
+        <button class="btn btn-secondary" onclick="showPage('browse')">
+          <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"></circle><path d="m21 21-4.35-4.35"></path></svg>
+          Browse Recoveries
+        </button>
+      </div>
+    </div>
+
+    <!-- Dynamic Live Statistics -->
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-icon" style="background: var(--primary-light); color: var(--primary);">
+          <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path></svg>
+        </div>
+        <div>
+          <div class="stat-val" id="statTotal">0</div>
+          <div class="stat-lbl">Total Items Reported</div>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon" style="background: var(--rose-50); color: var(--rose-600);">
+          <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><path d="M12 8v4m0 4h.01"></path></svg>
+        </div>
+        <div>
+          <div class="stat-val" id="statLost">0</div>
+          <div class="stat-lbl">Lost Reports</div>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon" style="background: var(--emerald-50); color: var(--emerald-600);">
+          <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><path d="M22 4L12 14.01l-3-3"></path></svg>
+        </div>
+        <div>
+          <div class="stat-val" id="statFound">0</div>
+          <div class="stat-lbl">Found Submissions</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="section-title">
+        <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+        How FindIt Works
+      </div>
+      <div class="steps-grid">
+        <div class="step-card">
+          <div class="step-num">01</div>
+          <h4 style="margin-bottom: 6px; font-weight:700;">Submit a Report</h4>
+          <p style="font-size:0.875rem; color:var(--slate-600);">Log the details, location, category, and an optional photograph of the lost or found item.</p>
+        </div>
+        <div class="step-card">
+          <div class="step-num">02</div>
+          <h4 style="margin-bottom: 6px; font-weight:700;">Automated Attribute Matching</h4>
+          <p style="font-size:0.875rem; color:var(--slate-600);">The network evaluates item categories, colors, locations, and descriptions to produce candidate scores.</p>
+        </div>
+        <div class="step-card">
+          <div class="step-num">03</div>
+          <h4 style="margin-bottom: 6px; font-weight:700;">Secure Recovery</h4>
+          <p style="font-size:0.875rem; color:var(--slate-600);">Contact matched finders directly via verified authentication to coordinate safe item retrieval.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- AUTH SECTION -->
+  <section id="login">
+    <div class="auth-solo-wrap">
+      <div class="auth-solo-card login-solo">
+        <div class="auth-solo-icon">
+          <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"></rect><path d="M7 11V7a5 5 0 0110 0v4"></path></svg>
+        </div>
+        <h2>Log In</h2>
+        <p class="auth-solo-sub">Welcome back to FindIt.</p>
+        <form id="loginForm">
+          <div class="form-group">
+            <label>Email Address</label>
+            <input type="email" id="loginEmail" placeholder="student@university.edu">
+          </div>
+          <div class="form-group">
+            <label>Password</label>
+            <input type="password" id="loginPassword" placeholder="6+ characters">
+          </div>
+          <button type="submit" class="btn btn-primary" id="loginBtn" style="width:100%; margin-top:6px;">Log In</button>
+        </form>
+        <div id="loginStatus"></div>
+        <div class="auth-switch-link">New to FindIt? <button type="button" id="goToSignup">Sign Up</button></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="signup">
+    <div class="auth-solo-wrap">
+      <div class="auth-solo-card signup-solo">
+        <div class="auth-solo-icon">
+          <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 00-4-4H6a4 4 0 00-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M20 8v6M23 11h-6"></path></svg>
+        </div>
+        <h2>Sign Up</h2>
+        <p class="auth-solo-sub">Create an account with your college.</p>
+        <form id="signupForm">
+          <div class="form-group">
+            <label>Email Address</label>
+            <input type="email" id="signupEmail" placeholder="student@university.edu">
+          </div>
+          <div class="form-group">
+            <label>College Category</label>
+            <select id="signupCollegeCategory">
+              <option value="">Select category...</option>
+              <option value="IIT">IIT</option>
+              <option value="NIT">NIT</option>
+              <option value="IIIT">IIIT</option>
+              <option value="Other">Other</option>
+            </select>
+          </div>
+          <div class="form-group" id="signupCollegeWrap" style="display:none;">
+            <label>College</label>
+            <select id="signupCollege">
+              <option value="">Select your college...</option>
+            </select>
+            <input type="text" id="signupCollegeOther" placeholder="Type your college name" style="display:none; margin-top:8px;">
+          </div>
+          <div class="form-group">
+            <label>Password</label>
+            <input type="password" id="signupPassword" placeholder="6+ characters">
+          </div>
+          <button type="submit" class="btn btn-primary" id="signupBtn" style="width:100%; margin-top:6px;">Sign Up</button>
+        </form>
+        <div id="signupStatus"></div>
+        <div class="auth-switch-link">Already have an account? <button type="button" id="goToLogin">Log In</button></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- REPORT ITEM SECTION -->
+  <section id="report">
+    <div class="card" style="max-width: 720px; margin: 0 auto;">
+      <div class="section-title" style="margin-bottom: 6px;">Report an Item</div>
+      <p style="color: var(--slate-500); font-size: 0.9rem; margin-bottom: 24px;">Provide accurate information to maximize the likelihood of matching.</p>
+
+      <div class="form-grid">
+        <div class="form-group full">
+          <label>Report Type</label>
+          <select id="itemType">
+            <option value="lost">Lost — I lost something</option>
+            <option value="found">Found — I found something</option>
+          </select>
+        </div>
+
+        <div class="form-group full">
+          <label>Photo Attachment</label>
+          <div class="upload-zone" id="uploadDropzone">
+            <svg width="32" height="32" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+            <p style="font-size: 0.875rem; font-weight:600; color:var(--slate-700); margin-top: 6px;">Click or drag photo here to upload</p>
+            <p style="font-size: 0.75rem; color:var(--slate-400);">PNG, JPG up to 5MB</p>
+            <input type="file" id="itemImage" accept="image/*">
+            <img id="imagePreview" class="preview-img" alt="Preview">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Category *</label>
+          <input type="text" id="itemCategory" placeholder="e.g. Backpack, Smartphone, ID Card">
+        </div>
+
+        <div class="form-group">
+          <label>Location *</label>
+          <input type="text" id="itemLocation" placeholder="e.g. Library 2nd Floor, Main Gate">
+        </div>
+
+        <div class="form-group">
+          <label>Latitude <span style="font-weight:400; color:var(--slate-400);">(Auto-GPS)</span></label>
+          <input type="number" step="any" id="itemLat" value="25.4920">
+        </div>
+        <div class="form-group">
+          <label>Longitude <span style="font-weight:400; color:var(--slate-400);">(Auto-GPS)</span></label>
+          <input type="number" step="any" id="itemLon" value="81.8639">
+        </div>
+        <div class="form-group full">
+          <button type="button" class="btn btn-secondary" id="getGpsBtn" style="padding:6px 12px; font-size:0.8rem;">
+            📍 Capture My Current GPS Location
+          </button>
+        </div>
+
+        <div class="form-group">
+          <label>Primary Colour</label>
+          <input type="text" id="itemColour" placeholder="e.g. Matte Black, Navy Blue">
+        </div>
+
+        <div class="form-group">
+          <label>Size / Dimensions</label>
+          <input type="text" id="itemSize" placeholder="e.g. Compact, Medium, 15-inch">
+        </div>
+
+        <div class="form-group full">
+          <label>Description & Unique Features</label>
+          <textarea id="itemDescription" rows="3" placeholder="Keychains, scratches, brand names, or distinctive marks"></textarea>
+        </div>
+      </div>
+
+      <button class="btn btn-primary" id="submitItemBtn" style="width:100%; margin-top: 12px;">Submit Report</button>
+      <div id="reportStatus"></div>
+    </div>
+  </section>
+
+  <!-- BROWSE SECTION -->
+  <section id="browse">
+    <div class="section-header">
+      <div class="section-title">All Reported Items</div>
+    </div>
+
+    <!-- Interactive Search Bar -->
+    <div class="filter-bar">
+      <div class="search-input-wrap">
+        <svg class="search-icon" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"></circle><path d="m21 21-4.35-4.35"></path></svg>
+        <input type="text" id="searchInput" placeholder="Search by keyword, location, color...">
+      </div>
+      <select id="typeFilter" class="filter-select">
+        <option value="all">All Types</option>
+        <option value="lost">Lost Only</option>
+        <option value="found">Found Only</option>
+      </select>
+    </div>
+
+    <div id="itemsList" class="items-grid"></div>
+  </section>
+
+  <!-- MY REPORTS SECTION -->
+  <section id="myreports">
+    <div class="section-header">
+      <div class="section-title">My Dashboard & Matches</div>
+      <span id="whoami" style="font-size: 0.85rem; color: var(--slate-500); font-weight: 500;"></span>
+    </div>
+
+    <div id="myItemsList"></div>
+  </section>
+
+  <section id="messages">
+    <h2 style="margin-bottom: 16px;">Messages</h2>
+    <div id="conversationsList"></div>
+
+    <div id="chatView" class="chat-panel" style="display:none;">
+      <div class="chat-header">
+        <button class="btn btn-secondary" id="chatBackBtn" style="padding:6px 10px; font-size:0.8rem;">&larr; Back</button>
+        <div>
+          <div id="chatWithLabel" style="font-weight:700; font-size:0.9rem;"></div>
+          <div id="chatItemLabel" style="font-size:0.75rem; color: var(--slate-500);"></div>
+        </div>
+      </div>
+      <div id="chatMessages" class="chat-messages"></div>
+      <div class="chat-input-row">
+        <input type="text" id="chatInput" placeholder="Type a message...">
+        <button class="btn btn-primary" id="chatSendBtn">Send</button>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<script>
+  // Synchronous, non-module script: switches to the last-visited page
+  // instantly during initial parsing, before the browser paints anything —
+  // this is what actually eliminates the "flash of Home" on refresh.
+  // The module script below still re-runs its own showPage() later (once
+  // auth state resolves) to correctly load any page-specific data like
+  // Messages conversations — that second call is a harmless no-op for the
+  // visible section itself since it's already showing.
+  (function() {
+    try {
+      var savedPage = localStorage.getItem("ff_lastPage");
+      if (!savedPage) return;
+      var target = document.getElementById(savedPage);
+      if (!target) return;
+      document.querySelectorAll("main section").forEach(function(s) {
+        s.classList.toggle("active", s.id === savedPage);
+      });
+      document.querySelectorAll(".nav-btn").forEach(function(b) {
+        if (b.dataset.page) b.classList.toggle("active", b.dataset.page === savedPage);
+      });
+    } catch (e) {}
+  })();
+</script>
+
+<!-- UNDO TOAST -->
+<div id="toast" style="display:none; position:fixed; bottom:24px; left:50%; transform:translateX(-50%); background:#0f172a; color:#ffffff; padding:12px 20px; border-radius:var(--radius-md); align-items:center; gap:16px; box-shadow:var(--shadow-lg); z-index:100;">
+  <span id="toastMessage" style="font-size:0.9rem; font-weight:500;"></span>
+  <button id="toastUndoBtn" style="padding:6px 14px; font-size:0.85rem; background:var(--amber-500); color:white; border:none; border-radius:var(--radius-sm); cursor:pointer; font-weight:700;">Undo</button>
+</div>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+  import {
+    getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword,
+    signOut, onAuthStateChanged, setPersistence, browserSessionPersistence
+  } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+  import {
+    getFirestore, collection, addDoc, onSnapshot, serverTimestamp, deleteDoc, doc,
+    setDoc, getDoc, query, where, updateDoc, orderBy
+  } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyC0gvOL_KFAbrFrcSRxOs42CRydQ56Wu8s",
+    authDomain: "lost-and-found-b577c.firebaseapp.com",
+    projectId: "lost-and-found-b577c",
+    storageBucket: "lost-and-found-b577c.firebasestorage.app",
+    messagingSenderId: "485396590412",
+    appId: "1:485396590412:web:765fb5bbd1c2833a5ee9e9"
+  };
+  const CLOUD_NAME = "rxkwngik";
+  const UPLOAD_PRESET = "lostfound_unsigned";
+
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+  // Use session storage instead of IndexedDB for login persistence — mobile
+  // Chrome restricts IndexedDB on file:// pages, which was causing login to
+  // hang forever on real devices (desktop-site mode masked this).
+  setPersistence(auth, browserSessionPersistence).catch((err) => {
+    console.warn("Could not set auth persistence:", err.message);
+  });
+  const db = getFirestore(app);
+  const itemsRef = collection(db, "items");
+  const usersRef = collection(db, "users");
+
+  let currentUser = null;
+  let currentUserCollege = null;
+  let hasRestoredPage = false;
+  let allItems = [];
+
+  // GPS Location Handler
+  document.getElementById("getGpsBtn").addEventListener("click", () => {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (pos) => {
+          document.getElementById("itemLat").value = pos.coords.latitude.toFixed(4);
+          document.getElementById("itemLon").value = pos.coords.longitude.toFixed(4);
+        },
+        (err) => alert("GPS permission denied. Using manual/default coordinates instead.")
+      );
+    } else {
+      alert("Geolocation isn't supported in this browser.");
+    }
+  });
+
+  // Mobile Navigation
+  const mobileMenuBtn = document.getElementById("mobileMenuBtn");
+  const navLinks = document.getElementById("navLinks");
+  mobileMenuBtn.addEventListener("click", () => navLinks.classList.toggle("show"));
+
+  // Navigation Logic
+  const navButtons = document.querySelectorAll("[data-page]");
+  const sections = document.querySelectorAll("main section");
+  const validPageIds = Array.from(sections).map(s => s.id);
+
+  window.showPage = function(pageId) {
+    sections.forEach(s => s.classList.toggle("active", s.id === pageId));
+    document.querySelectorAll(".nav-btn").forEach(b => {
+      if (b.dataset.page) b.classList.toggle("active", b.dataset.page === pageId);
+    });
+    navLinks.classList.remove("show");
+    try {
+      localStorage.setItem("ff_lastPage", pageId);
+    } catch (e) {}
+  };
+
+  navButtons.forEach(btn => {
+    btn.addEventListener("click", () => showPage(btn.dataset.page));
+  });
+
+  // Auth Logic
+  const loginEmail = document.getElementById("loginEmail");
+  const loginPassword = document.getElementById("loginPassword");
+  const loginStatus = document.getElementById("loginStatus");
+  const signupEmail = document.getElementById("signupEmail");
+  const signupPassword = document.getElementById("signupPassword");
+  const signupStatus = document.getElementById("signupStatus");
+  const authNavBtn = document.getElementById("authNavBtn");
+  const logoutBtn = document.getElementById("logoutBtn");
+  const whoami = document.getElementById("whoami");
+  const headerWhoami = document.getElementById("headerWhoami");
+
+  const authCollegeCategory = document.getElementById("signupCollegeCategory");
+  const authCollegeWrap = document.getElementById("signupCollegeWrap");
+  const authCollege = document.getElementById("signupCollege");
+  const authCollegeOther = document.getElementById("signupCollegeOther");
+
+  // Links to switch between the two standalone auth pages.
+  document.getElementById("goToSignup").addEventListener("click", () => showPage("signup"));
+  document.getElementById("goToLogin").addEventListener("click", () => showPage("login"));
+
+  // Curated Indian college lists by category.
+  // IITs (23) and NITs (31) are the complete official lists.
+  // IIITs (~28) covers the autonomous + PPP-model institutes.
+  // "Other" is a large but non-exhaustive list of well-known institutes across
+  // engineering, medicine, law, management, and arts & science — "Other (not listed)"
+  // always falls back to free text so no one is blocked from signing up.
+  const COLLEGE_DATA = {
+    IIT: [
+      "IIT Bombay", "IIT Delhi", "IIT Madras", "IIT Kanpur", "IIT Kharagpur",
+      "IIT Roorkee", "IIT Guwahati", "IIT Hyderabad", "IIT Indore",
+      "IIT (BHU) Varanasi", "IIT Bhubaneswar", "IIT Gandhinagar", "IIT Ropar",
+      "IIT Patna", "IIT Jodhpur", "IIT Mandi", "IIT (ISM) Dhanbad",
+      "IIT Palakkad", "IIT Tirupati", "IIT Bhilai", "IIT Goa", "IIT Jammu", "IIT Dharwad"
+    ],
+    NIT: [
+      "NIT Agartala", "NIT Andhra Pradesh", "NIT Arunachal Pradesh", "NIT Calicut",
+      "NIT Delhi", "NIT Durgapur", "NIT Goa", "NIT Hamirpur",
+      "Dr B R Ambedkar NIT Jalandhar", "NIT Jamshedpur", "MNIT Jaipur", "MANIT Bhopal",
+      "VNIT Nagpur", "MNNIT Allahabad", "NIT Kurukshetra", "NIT Manipur",
+      "NIT Meghalaya", "NIT Mizoram", "NIT Nagaland", "NIT Patna", "NIT Puducherry",
+      "NIT Raipur", "NIT Rourkela", "NIT Silchar", "NIT Sikkim", "NIT Srinagar",
+      "NIT Karnataka, Surathkal", "NIT Tiruchirappalli", "NIT Uttarakhand",
+      "NIT Warangal", "SVNIT Surat"
+    ],
+    IIIT: [
+      "IIIT Hyderabad", "IIIT Bangalore", "IIIT Delhi", "IIIT Allahabad",
+      "ABV-IIITM Gwalior", "IIITDM Jabalpur", "IIITDM Kancheepuram (Chennai)",
+      "IIIT Kota", "IIIT Guwahati", "IIIT Vadodara", "IIIT Nagpur", "IIIT Pune",
+      "IIIT Ranchi", "IIIT Sonepat", "IIIT Bhopal", "IIIT Bhagalpur", "IIIT Kalyani",
+      "IIIT Lucknow", "IIIT Kottayam", "IIIT Manipur (Senapati)", "IIIT Sri City",
+      "IIIT Surat", "IIIT Tiruchirappalli", "IIIT Una", "IIIT Dharwad", "IIIT Raichur",
+      "IIIT Kurnool", "IIIT Bhubaneswar"
+    ],
+    Other: [
+      "IISc Bangalore", "IISER Pune", "IISER Kolkata", "IISER Mohali", "IISER Bhopal",
+      "IISER Thiruvananthapuram", "IISER Berhampur", "IISER Tirupati",
+      "BITS Pilani", "BITS Pilani, Goa", "BITS Pilani, Hyderabad",
+      "DTU (Delhi Technological University)", "NSUT Delhi", "IIEST Shibpur",
+      "Jadavpur University", "Anna University", "Aliah University",
+      "COEP Technological University, Pune", "VJTI Mumbai", "ICT Mumbai",
+      "PEC Chandigarh", "Panjab University", "Punjab Engineering College",
+      "IIST Thiruvananthapuram", "Jamia Millia Islamia", "AMU Aligarh",
+      "Delhi University (DU)", "Jawaharlal Nehru University (JNU)",
+      "Banaras Hindu University (BHU)", "Osmania University", "Andhra University",
+      "VIT Vellore", "VIT Chennai", "VIT Bhopal", "VIT AP",
+      "Manipal Institute of Technology", "MIT Manipal",
+      "SRM Institute of Science and Technology", "SASTRA University Thanjavur",
+      "Thapar Institute of Engineering and Technology", "KIIT Bhubaneswar",
+      "Amrita Vishwa Vidyapeetham", "Amity University", "Shiv Nadar University",
+      "Ashoka University", "Chandigarh University", "Lovely Professional University (LPU)",
+      "Christ University, Bangalore", "PSG College of Technology, Coimbatore",
+      "Government College of Technology, Coimbatore", "Madras Institute of Technology",
+      "College of Engineering, Guindy (Anna University)", "SSN College of Engineering, Chennai",
+      "Loyola-ICAM College of Engineering, Chennai", "RV College of Engineering, Bangalore",
+      "BMS College of Engineering, Bangalore", "M S Ramaiah Institute of Technology, Bangalore",
+      "PES University, Bangalore", "Dayananda Sagar College of Engineering, Bangalore",
+      "DA-IICT Gandhinagar", "PDEU Gandhinagar", "Nirma University, Ahmedabad",
+      "L D College of Engineering, Ahmedabad", "SVNIT Surat (Govt)", "Government Engineering College, various",
+      "Symbiosis Institute of Technology, Pune", "Fergusson College, Pune",
+      "MIT World Peace University, Pune", "Vishwakarma Institute of Technology, Pune",
+      "Presidency University, Kolkata", "Calcutta University", "St. Xavier's College, Kolkata",
+      "St. Stephen's College, Delhi", "Miranda House, Delhi", "Hindu College, Delhi",
+      "Hansraj College, Delhi", "Lady Shri Ram College, Delhi",
+      "AIIMS Delhi", "Maulana Azad Medical College", "Christian Medical College, Vellore",
+      "NLSIU Bangalore", "NALSAR Hyderabad", "National Law University, Delhi",
+      "IIM Ahmedabad", "IIM Bangalore", "IIM Calcutta", "IIM Lucknow", "IIM Indore",
+      "XLRI Jamshedpur", "NIFT (National Institute of Fashion Technology)",
+      "NID Ahmedabad (National Institute of Design)", "School of Planning and Architecture, Delhi",
+      "Aligarh Muslim University (AMU)", "Visvesvaraya National Institute of Technology (VNIT)",
+      "Sardar Patel Institute of Technology, Mumbai", "K J Somaiya College of Engineering, Mumbai",
+      "Thadomal Shahani Engineering College, Mumbai", "Veermata Jijabai Technological Institute",
+      "Government College of Engineering, Pune", "Walchand College of Engineering, Sangli",
+      "Birla Institute of Technology, Mesra", "Manav Rachna University", "Galgotias University",
+      "Sharda University", "Bennett University", "GLA University, Mathura",
+      "Graphic Era University, Dehradun", "UPES Dehradun", "Chitkara University",
+      "Karunya Institute of Technology, Coimbatore", "Kalasalingam University",
+      "Vel Tech University, Chennai", "Hindustan Institute of Technology, Chennai",
+      "SRM Ramapuram, Chennai", "Sathyabama Institute of Science and Technology",
+      "Central University of Hyderabad", "University of Hyderabad", "GITAM University",
+      "Vignan University", "K L University (KLU)", "Chaitanya Bharathi Institute of Technology",
+      "CVR College of Engineering", "MVSR Engineering College",
+      "Guru Gobind Singh Indraprastha University (GGSIPU)", "Bharati Vidyapeeth, Pune",
+      "Central University of Punjab", "Guru Nanak Dev University",
+      "IK Gujral Punjab Technical University", "Rajiv Gandhi Institute of Petroleum Technology",
+      "Central Institute of Technology, Kokrajhar"
+    ]
+  };
+
+  function populateCollegeSelect(category) {
+    authCollege.innerHTML = '<option value="">Select your college...</option>';
+    if (!category) {
+      authCollegeWrap.style.display = "none";
+      authCollegeOther.style.display = "none";
+      authCollegeOther.value = "";
+      return;
+    }
+    authCollegeWrap.style.display = "block";
+    (COLLEGE_DATA[category] || []).forEach(name => {
+      const opt = document.createElement("option");
+      opt.value = name;
+      opt.textContent = name;
+      authCollege.appendChild(opt);
+    });
+    const otherOpt = document.createElement("option");
+    otherOpt.value = "__other__";
+    otherOpt.textContent = "Other (not listed)";
+    authCollege.appendChild(otherOpt);
+    authCollegeOther.style.display = "none";
+    authCollegeOther.value = "";
+  }
+
+  authCollegeCategory.addEventListener("change", () => {
+    populateCollegeSelect(authCollegeCategory.value);
+  });
+
+  authCollege.addEventListener("change", () => {
+    const isOther = authCollege.value === "__other__";
+    authCollegeOther.style.display = isOther ? "block" : "none";
+    if (!isOther) authCollegeOther.value = "";
+  });
+
+  // Wraps a promise with a hard time limit so a stuck network/browser call
+  // can never leave a button stuck on "Logging in..." forever.
+  function withTimeout(promise, ms, timeoutMessage) {
+    return Promise.race([
+      promise,
+      new Promise((_, reject) => setTimeout(() => reject(new Error(timeoutMessage)), ms))
+    ]);
+  }
+
+  function getSelectedCollege() {
+    if (authCollege.value === "__other__") {
+      return authCollegeOther.value.trim();
+    }
+    return authCollege.value.trim();
+  }
+
+  const signupBtnEl = document.getElementById("signupBtn");
+  const loginBtnEl = document.getElementById("loginBtn");
+
+  document.getElementById("signupForm").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const college = getSelectedCollege();
+    if (!college) {
+      signupStatus.textContent = "Please select your college to sign up.";
+      signupStatus.className = "error";
+      return;
+    }
+    signupBtnEl.disabled = true;
+    const originalText = signupBtnEl.textContent;
+    signupBtnEl.textContent = "Signing up...";
+    try {
+      const cred = await withTimeout(
+        createUserWithEmailAndPassword(auth, signupEmail.value, signupPassword.value),
+        15000,
+        "Sign up timed out. Check your connection and try again."
+      );
+      await setDoc(doc(db, "users", cred.user.uid), {
+        email: signupEmail.value,
+        college: college
+      });
+      signupStatus.textContent = "Account created successfully.";
+      signupStatus.className = "success";
+      setTimeout(() => showPage("home"), 500);
+    } catch (err) {
+      signupStatus.textContent = err.message;
+      signupStatus.className = "error";
+    } finally {
+      signupBtnEl.disabled = false;
+      signupBtnEl.textContent = originalText;
+    }
+  });
+
+  document.getElementById("loginForm").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    loginBtnEl.disabled = true;
+    const originalText = loginBtnEl.textContent;
+    loginBtnEl.textContent = "Logging in...";
+    try {
+      await withTimeout(
+        signInWithEmailAndPassword(auth, loginEmail.value, loginPassword.value),
+        15000,
+        "Login timed out. Check your connection and try again."
+      );
+      loginStatus.textContent = "Authenticated successfully.";
+      loginStatus.className = "success";
+      setTimeout(() => showPage("home"), 500);
+    } catch (err) {
+      loginStatus.textContent = err.message;
+      loginStatus.className = "error";
+    } finally {
+      loginBtnEl.disabled = false;
+      loginBtnEl.textContent = originalText;
+    }
+  });
+
+  logoutBtn.addEventListener("click", async () => {
+    await signOut(auth);
+    showPage("home");
+  });
+
+  onAuthStateChanged(auth, async (user) => {
+    currentUser = user;
+    if (user) {
+      const userDoc = await getDoc(doc(db, "users", user.uid));
+      currentUserCollege = userDoc.exists() ? userDoc.data().college : null;
+
+      whoami.textContent = currentUserCollege
+        ? `Signed in as: ${user.email} — ${currentUserCollege} Network`
+        : "Signed in as: " + user.email;
+
+      headerWhoami.innerHTML = currentUserCollege
+        ? `${user.email} <span class="college-part">• ${currentUserCollege}</span>`
+        : user.email;
+      headerWhoami.style.display = "inline-flex";
+
+      authNavBtn.style.display = "none";
+      logoutBtn.style.display = "inline-flex";
+    } else {
+      currentUserCollege = null;
+      whoami.textContent = "";
+      headerWhoami.textContent = "";
+      headerWhoami.style.display = "none";
+      authNavBtn.style.display = "inline-flex";
+      logoutBtn.style.display = "none";
+    }
+    subscribeToItems();
+
+    if (!hasRestoredPage) {
+      hasRestoredPage = true;
+      restoreLastPage();
+    }
+  });
+
+  // Image Upload Preview
+  const itemImage = document.getElementById("itemImage");
+  const imagePreview = document.getElementById("imagePreview");
+  itemImage.addEventListener("change", (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      imagePreview.src = URL.createObjectURL(file);
+      imagePreview.style.display = "block";
+    }
+  });
+
+  async function uploadImage(file) {
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("upload_preset", UPLOAD_PRESET);
+    const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`, {
+      method: "POST", body: formData
+    });
+    if (!res.ok) throw new Error("Image upload failed");
+    const data = await res.json();
+    return data.secure_url;
+  }
+
+  // Submit Item
+  const reportStatus = document.getElementById("reportStatus");
+  const submitItemBtn = document.getElementById("submitItemBtn");
+
+  submitItemBtn.addEventListener("click", async () => {
+    if (!currentUser) {
+      reportStatus.textContent = "Please sign in to submit a report.";
+      reportStatus.className = "error";
+      showPage("login");
+      return;
+    }
+
+    const type = document.getElementById("itemType").value;
+    const category = document.getElementById("itemCategory").value.trim();
+    const colour = document.getElementById("itemColour").value.trim();
+    const size = document.getElementById("itemSize").value.trim();
+    const location = document.getElementById("itemLocation").value.trim();
+    const description = document.getElementById("itemDescription").value.trim();
+    const lat = parseFloat(document.getElementById("itemLat").value) || null;
+    const lon = parseFloat(document.getElementById("itemLon").value) || null;
+    const imageFile = itemImage.files[0];
+
+    if (!category || !location) {
+      reportStatus.textContent = "Category and location are required.";
+      reportStatus.className = "error";
+      return;
+    }
+
+    submitItemBtn.disabled = true;
+    reportStatus.textContent = "Uploading assets and publishing report...";
+    reportStatus.className = "";
+
+    try {
+      let imageUrl = "";
+      if (imageFile) imageUrl = await uploadImage(imageFile);
+
+      await addDoc(itemsRef, {
+        type, category, colour, size, location, description,
+        latitude: lat, longitude: lon,
+        image: imageUrl,
+        ownerUid: currentUser.uid,
+        ownerEmail: currentUser.email,
+        college: currentUserCollege,
+        status: "open",
+        createdAt: serverTimestamp()
+      });
+
+      reportStatus.textContent = "Report published successfully!";
+      reportStatus.className = "success";
+      
+      // Reset form
+      document.getElementById("itemCategory").value = "";
+      document.getElementById("itemColour").value = "";
+      document.getElementById("itemSize").value = "";
+      document.getElementById("itemLocation").value = "";
+      document.getElementById("itemDescription").value = "";
+      itemImage.value = "";
+      imagePreview.style.display = "none";
+      
+      setTimeout(() => showPage("browse"), 800);
+    } catch (err) {
+      reportStatus.textContent = "Error: " + err.message;
+      reportStatus.className = "error";
+    } finally {
+      submitItemBtn.disabled = false;
+    }
+  });
+
+  // Card HTML Renderer
+  function renderCard(d, showDelete = false, extraHtml = "") {
+    const canMessage = !showDelete && currentUser && d.ownerUid !== currentUser.uid;
+    return `
+      <div class="item-card">
+        <div class="item-thumb-wrap">
+          <span class="tag-badge ${d.type}">${d.type}</span>
+          <span class="status-badge ${d.status === 'resolved' ? 'resolved' : 'open'}">${d.status === 'resolved' ? 'Resolved' : 'Pending'}</span>
+          ${d.image ? `<img src="${d.image}" class="item-thumb" alt="${d.category}">` : `
+            <div class="item-no-thumb">
+              <svg width="36" height="36" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+            </div>
+          `}
+        </div>
+        <div class="item-body">
+          <div class="item-category">${d.category}</div>
+          <div class="item-title">${d.category}</div>
+          <div class="item-meta">
+            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path></svg>
+            ${d.location} ${d.colour ? '• ' + d.colour : ''}
+          </div>
+          ${(d.latitude && d.longitude) ? `
+            <div style="font-size:0.72rem; color:var(--slate-400); margin-top:-6px; margin-bottom:10px;">
+              GPS: ${d.latitude.toFixed(4)}, ${d.longitude.toFixed(4)}
+            </div>
+          ` : ""}
+          <p class="item-desc">${d.description || "No further details provided."}</p>
+          ${extraHtml}
+          ${canMessage && d.status !== 'resolved' ? `
+            <button class="btn btn-primary message-btn" data-item-id="${d.id}" data-owner-uid="${d.ownerUid}" data-owner-email="${d.ownerEmail}" data-category="${d.category}">
+              ${d.type === 'found' ? 'This Is Mine — Message' : 'Message Reporter'}
+            </button>
+          ` : ""}
+          ${showDelete ? `
+            <div class="item-actions">
+              <button class="btn btn-secondary delete-btn" data-id="${d.id}" data-category="${d.category}">
+                Delete Report
+              </button>
+              <button class="btn btn-secondary resolve-btn" data-id="${d.id}" data-status="${d.status || 'open'}">
+                ${d.status === 'resolved' ? 'Reopen Report' : 'Mark as Resolved'}
+              </button>
+            </div>
+          ` : ""}
+        </div>
+      </div>
+    `;
+  }
+
+  // Firestore Realtime Listener
+  const itemsList = document.getElementById("itemsList");
+  const searchInput = document.getElementById("searchInput");
+  const typeFilter = document.getElementById("typeFilter");
+
+  let unsubscribeItems = null;
+
+  function subscribeToItems() {
+    if (unsubscribeItems) unsubscribeItems(); // stop the previous listener, if any
+
+    if (!currentUserCollege) {
+      allItems = [];
+      renderBrowseItems();
+      renderMyReports();
+      document.getElementById("statTotal").textContent = "0";
+      document.getElementById("statLost").textContent = "0";
+      document.getElementById("statFound").textContent = "0";
+      return;
+    }
+
+    const collegeQuery = query(itemsRef, where("college", "==", currentUserCollege));
+    unsubscribeItems = onSnapshot(collegeQuery, (snapshot) => {
+      allItems = [];
+      snapshot.forEach((doc) => allItems.push({ id: doc.id, ...doc.data() }));
+
+      document.getElementById("statTotal").textContent = allItems.length;
+      document.getElementById("statLost").textContent = allItems.filter(i => i.type === 'lost').length;
+      document.getElementById("statFound").textContent = allItems.filter(i => i.type === 'found').length;
+
+      renderBrowseItems();
+      renderMyReports();
+    });
+  }
+
+  function renderBrowseItems() {
+    const q = searchInput.value.toLowerCase();
+    const type = typeFilter.value;
+
+    const filtered = allItems.filter(item => {
+      const matchQuery = !q || (
+        (item.category && item.category.toLowerCase().includes(q)) ||
+        (item.location && item.location.toLowerCase().includes(q)) ||
+        (item.colour && item.colour.toLowerCase().includes(q)) ||
+        (item.description && item.description.toLowerCase().includes(q))
+      );
+      const matchType = type === "all" || item.type === type;
+      return matchQuery && matchType;
+    });
+
+    if (filtered.length === 0) {
+      itemsList.innerHTML = `<div class="empty-state" style="grid-column: 1/-1;">No reported items match your criteria.</div>`;
+    } else {
+      itemsList.innerHTML = filtered.map(d => renderCard(d)).join("");
+    }
+    wireMessageButtons();
+  }
+
+  searchInput.addEventListener("input", renderBrowseItems);
+  typeFilter.addEventListener("change", renderBrowseItems);
+
+  // Matching Scoring Algorithm
+  function computeMatchScore(lost, found) {
+    let score = 0;
+    if (lost.category && found.category && lost.category.toLowerCase() === found.category.toLowerCase()) score += 40;
+    if (lost.colour && found.colour && lost.colour.toLowerCase() === found.colour.toLowerCase()) score += 25;
+    if (lost.location && found.location && lost.location.toLowerCase() === found.location.toLowerCase()) score += 20;
+    const lostWords = (lost.description || "").toLowerCase().split(/\W+/).filter(Boolean);
+    const foundWords = (found.description || "").toLowerCase().split(/\W+/).filter(Boolean);
+    const overlap = lostWords.filter(w => foundWords.includes(w));
+    if (overlap.length > 0) score += Math.min(15, overlap.length * 5);
+    return score;
+  }
+
+  // Dashboard & Undo Delete
+  const pendingDeletes = {};
+  const toast = document.getElementById("toast");
+  const toastMessage = document.getElementById("toastMessage");
+  const toastUndoBtn = document.getElementById("toastUndoBtn");
+  let toastTargetId = null;
+
+  function startDelete(id, label) {
+    renderMyReports();
+    toastTargetId = id;
+    toastMessage.textContent = `"${label}" staged for deletion.`;
+    toast.style.display = "flex";
+
+    pendingDeletes[id] = setTimeout(async () => {
+      toast.style.display = "none";
+      try {
+        await deleteDoc(doc(db, "items", id));
+      } catch (err) {
+        alert("Delete failed: " + err.message);
+      }
+      delete pendingDeletes[id];
+    }, 5000);
+  }
+
+  toastUndoBtn.addEventListener("click", () => {
+    if (toastTargetId && pendingDeletes[toastTargetId]) {
+      clearTimeout(pendingDeletes[toastTargetId]);
+      delete pendingDeletes[toastTargetId];
+    }
+    toast.style.display = "none";
+    renderMyReports();
+  });
+
+  function renderMyReports() {
+    const myItemsList = document.getElementById("myItemsList");
+    if (!currentUser) {
+      myItemsList.innerHTML = '<div class="empty-state">Sign in to access your dashboard reports.</div>';
+      return;
+    }
+
+    const mine = allItems.filter(d => d.ownerUid === currentUser.uid && !pendingDeletes[d.id]);
+    if (mine.length === 0) {
+      myItemsList.innerHTML = '<div class="empty-state">You have not submitted any reports yet.</div>';
+      return;
+    }
+
+    myItemsList.innerHTML = `<div class="items-grid">` + mine.map(item => {
+      let extraHtml = "";
+
+      if (item.type === "lost") {
+        const candidates = allItems
+          .filter(d => d.type === "found" && d.ownerUid !== currentUser.uid)
+          .map(d => ({ ...d, score: computeMatchScore(item, d) }))
+          .filter(d => d.score > 0)
+          .sort((a, b) => b.score - a.score)
+          .slice(0, 3);
+
+        if (candidates.length > 0) {
+          extraHtml = `
+            <div class="match-section">
+              <span style="font-size:0.8rem; font-weight:700; color:var(--slate-600);">Candidate Matches (${candidates.length})</span>
+              ${candidates.map(c => `
+                <div class="match-card">
+                  <div>
+                    <div style="font-size:0.85rem; font-weight:700;">${c.category}</div>
+                    <div style="font-size:0.75rem; color:var(--slate-500);">${c.location}</div>
+                  </div>
+                  <div style="text-align:right;">
+                    <span class="match-score">${c.score}% Match</span>
+                    <button class="btn btn-secondary contact-btn" data-email="${c.ownerEmail}" style="display:block; margin-top:4px; padding:3px 8px; font-size:0.75rem;">Email</button>
+                    <button class="btn btn-primary message-btn" data-item-id="${c.id}" data-owner-uid="${c.ownerUid}" data-owner-email="${c.ownerEmail}" data-category="${c.category}" style="display:block; margin-top:4px; padding:3px 8px; font-size:0.75rem;">Message</button>
+                  </div>
+                </div>
+              `).join("")}
+            </div>
+          `;
+        }
+      }
+
+      return renderCard(item, true, extraHtml);
+    }).join("") + `</div>`;
+
+    document.querySelectorAll(".delete-btn").forEach(btn => {
+      btn.addEventListener("click", () => startDelete(btn.dataset.id, btn.dataset.category));
+    });
+
+    document.querySelectorAll(".contact-btn").forEach(btn => {
+      btn.addEventListener("click", () => {
+        btn.textContent = btn.dataset.email;
+        window.location.href = `mailto:${btn.dataset.email}`;
+      });
+    });
+
+    document.querySelectorAll(".resolve-btn").forEach(btn => {
+      btn.addEventListener("click", async () => {
+        const newStatus = btn.dataset.status === "resolved" ? "open" : "resolved";
+        try {
+          await updateDoc(doc(db, "items", btn.dataset.id), { status: newStatus });
+        } catch (err) {
+          alert("Couldn't update status: " + err.message);
+        }
+      });
+    });
+
+    wireMessageButtons();
+  }
+
+  // ---------- DARK THEME ----------
+  const darkModeToggle = document.getElementById("darkModeToggle");
+  const darkModeIcon = document.getElementById("darkModeIcon");
+  const moonPath = "M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z";
+  const sunPath = "M12 4V2M12 22v-2M4.93 4.93L3.51 3.51M20.49 20.49l-1.42-1.42M4 12H2M22 12h-2M4.93 19.07l-1.42 1.42M20.49 3.51l-1.42 1.42M16 12a4 4 0 11-8 0 4 4 0 018 0z";
+
+  // Sync the icon with whatever theme the head script already applied on load.
+  (function initThemeIcon() {
+    const isDark = document.documentElement.classList.contains("dark-theme");
+    darkModeIcon.innerHTML = `<path d="${isDark ? sunPath : moonPath}"></path>`;
+  })();
+
+  darkModeToggle.addEventListener("click", () => {
+    const isDark = document.documentElement.classList.toggle("dark-theme");
+    darkModeIcon.innerHTML = `<path d="${isDark ? sunPath : moonPath}"></path>`;
+    try {
+      localStorage.setItem("ff_theme", isDark ? "dark" : "light");
+    } catch (e) {}
+  });
+
+  // ---------- MESSAGING ----------
+  function conversationId(itemId, uidA, uidB) {
+    return itemId + "_" + [uidA, uidB].sort().join("_");
+  }
+
+  function wireMessageButtons() {
+    document.querySelectorAll(".message-btn").forEach(btn => {
+      btn.addEventListener("click", () => openConversation(
+        btn.dataset.itemId, btn.dataset.ownerUid, btn.dataset.ownerEmail, btn.dataset.category
+      ));
+    });
+  }
+
+  let activeConversationId = null;
+  let unsubscribeChat = null;
+
+  async function openConversation(itemId, otherUid, otherEmail, category) {
+    if (!currentUser) {
+      alert("Please log in first.");
+      return;
+    }
+    const convId = conversationId(itemId, currentUser.uid, otherUid);
+    activeConversationId = convId;
+
+    // Create/update the conversation's metadata doc so it shows up in each person's list
+    await setDoc(doc(db, "conversations", convId), {
+      itemId, category,
+      participants: [currentUser.uid, otherUid],
+      participantEmails: { [currentUser.uid]: currentUser.email, [otherUid]: otherEmail },
+      updatedAt: serverTimestamp()
+    }, { merge: true });
+
+    window.showPage("messages");
+    openChatView(convId, otherEmail, category);
+  }
+
+  function openChatView(convId, otherEmail, category) {
+    activeConversationId = convId;
+    document.getElementById("conversationsList").style.display = "none";
+    document.getElementById("chatView").style.display = "flex";
+    document.getElementById("chatWithLabel").textContent = otherEmail;
+    document.getElementById("chatItemLabel").textContent = "Re: " + category;
+
+    if (unsubscribeChat) unsubscribeChat();
+    const messagesRef = collection(db, "messages");
+    // No orderBy here on purpose — where + orderBy on different fields needs a
+    // Firestore composite index. We sort client-side instead to avoid that entirely.
+    const chatQuery = query(messagesRef, where("conversationId", "==", convId));
+    const chatMessagesEl = document.getElementById("chatMessages");
+
+    unsubscribeChat = onSnapshot(chatQuery, (snapshot) => {
+      const msgs = [];
+      snapshot.forEach((doc) => msgs.push(doc.data()));
+      msgs.sort((a, b) => (a.createdAt?.seconds || 0) - (b.createdAt?.seconds || 0));
+
+      chatMessagesEl.innerHTML = "";
+      msgs.forEach((m) => {
+        const bubble = document.createElement("div");
+        bubble.className = "chat-bubble " + (m.senderUid === currentUser.uid ? "mine" : "theirs");
+        bubble.textContent = m.text;
+        chatMessagesEl.appendChild(bubble);
+      });
+      chatMessagesEl.scrollTop = chatMessagesEl.scrollHeight;
+    }, (err) => {
+      console.error("Chat listener error:", err);
+      chatMessagesEl.innerHTML = '<div class="empty-state">Couldn\'t load messages: ' + err.message + '</div>';
+    });
+  }
+
+  document.getElementById("chatBackBtn").addEventListener("click", () => {
+    document.getElementById("chatView").style.display = "none";
+    document.getElementById("conversationsList").style.display = "block";
+    if (unsubscribeChat) unsubscribeChat();
+    renderConversationsList();
+  });
+
+  async function sendChatMessage() {
+    const input = document.getElementById("chatInput");
+    const text = input.value.trim();
+    if (!text || !activeConversationId || !currentUser) return;
+
+    await addDoc(collection(db, "messages"), {
+      conversationId: activeConversationId,
+      senderUid: currentUser.uid,
+      senderEmail: currentUser.email,
+      text,
+      createdAt: serverTimestamp()
+    });
+    await setDoc(doc(db, "conversations", activeConversationId), {
+      lastMessage: text,
+      updatedAt: serverTimestamp()
+    }, { merge: true });
+
+    input.value = "";
+  }
+
+  document.getElementById("chatSendBtn").addEventListener("click", sendChatMessage);
+  document.getElementById("chatInput").addEventListener("keydown", (e) => {
+    if (e.key === "Enter") sendChatMessage();
+  });
+
+  function renderConversationsList() {
+    const listEl = document.getElementById("conversationsList");
+    if (!currentUser) {
+      listEl.innerHTML = '<div class="empty-state">Log in to see your messages.</div>';
+      return;
+    }
+    const convQuery = query(collection(db, "conversations"), where("participants", "array-contains", currentUser.uid));
+    onSnapshot(convQuery, (snapshot) => {
+      const convos = [];
+      snapshot.forEach((doc) => convos.push({ id: doc.id, ...doc.data() }));
+      convos.sort((a, b) => (b.updatedAt?.seconds || 0) - (a.updatedAt?.seconds || 0));
+
+      if (convos.length === 0) {
+        listEl.innerHTML = '<div class="empty-state">No conversations yet. Message someone from Browse or your matches.</div>';
+        return;
+      }
+
+      listEl.innerHTML = convos.map(c => {
+        const otherUid = c.participants.find(uid => uid !== currentUser.uid);
+        const otherEmail = c.participantEmails ? c.participantEmails[otherUid] : "Unknown";
+        return `
+          <div class="conversation-item" data-conv-id="${c.id}" data-other-email="${otherEmail}" data-category="${c.category || ''}">
+            <div>
+              <div style="font-weight:700; font-size:0.9rem;">${otherEmail}</div>
+              <div style="font-size:0.8rem; color:var(--slate-500);">Re: ${c.category || ''} — ${c.lastMessage || 'No messages yet'}</div>
+            </div>
+          </div>
+        `;
+      }).join("");
+
+      document.querySelectorAll(".conversation-item").forEach(el => {
+        el.addEventListener("click", () => {
+          openChatView(el.dataset.convId, el.dataset.otherEmail, el.dataset.category);
+        });
+      });
+    }, (err) => {
+      console.error("Conversations listener error:", err);
+      listEl.innerHTML = '<div class="empty-state">Couldn\'t load conversations: ' + err.message + '</div>';
+    });
+  }
+
+  const originalShowPage = window.showPage;
+  window.showPage = function(pageId) {
+    originalShowPage(pageId);
+    if (pageId === "messages") renderConversationsList();
+  };
+
+  // Restore whichever page the user was on before the refresh.
+  // Called once, from inside onAuthStateChanged's first resolution, so
+  // currentUser/currentUserCollege are already settled by the time any
+  // page-specific loading (like fetching Messages conversations) runs —
+  // avoids a race where the restore fires before auth state is known.
+  function restoreLastPage() {
+    let savedPage = null;
+    try {
+      savedPage = localStorage.getItem("ff_lastPage");
+    } catch (e) {}
+    if (savedPage && validPageIds.includes(savedPage)) {
+      window.showPage(savedPage);
+    }
+  }
+</script>
+</body>
+</html>
