@@ -871,6 +871,20 @@
         </div>
 
         <div class="form-group">
+          <label>Latitude <span style="font-weight:400; color:var(--slate-400);">(Auto-GPS)</span></label>
+          <input type="number" step="any" id="itemLat" value="25.4920">
+        </div>
+        <div class="form-group">
+          <label>Longitude <span style="font-weight:400; color:var(--slate-400);">(Auto-GPS)</span></label>
+          <input type="number" step="any" id="itemLon" value="81.8639">
+        </div>
+        <div class="form-group full">
+          <button type="button" class="btn btn-secondary" id="getGpsBtn" style="padding:6px 12px; font-size:0.8rem;">
+            📍 Capture My Current GPS Location
+          </button>
+        </div>
+
+        <div class="form-group">
           <label>Primary Colour</label>
           <input type="text" id="itemColour" placeholder="e.g. Matte Black, Navy Blue">
         </div>
@@ -1007,6 +1021,21 @@
   let currentUserCollege = null;
   let hasRestoredPage = false;
   let allItems = [];
+
+  // GPS Location Handler
+  document.getElementById("getGpsBtn").addEventListener("click", () => {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (pos) => {
+          document.getElementById("itemLat").value = pos.coords.latitude.toFixed(4);
+          document.getElementById("itemLon").value = pos.coords.longitude.toFixed(4);
+        },
+        (err) => alert("GPS permission denied. Using manual/default coordinates instead.")
+      );
+    } else {
+      alert("Geolocation isn't supported in this browser.");
+    }
+  });
 
   // Mobile Navigation
   const mobileMenuBtn = document.getElementById("mobileMenuBtn");
@@ -1287,6 +1316,8 @@
     const size = document.getElementById("itemSize").value.trim();
     const location = document.getElementById("itemLocation").value.trim();
     const description = document.getElementById("itemDescription").value.trim();
+    const lat = parseFloat(document.getElementById("itemLat").value) || null;
+    const lon = parseFloat(document.getElementById("itemLon").value) || null;
     const imageFile = itemImage.files[0];
 
     if (!category || !location) {
@@ -1305,6 +1336,7 @@
 
       await addDoc(itemsRef, {
         type, category, colour, size, location, description,
+        latitude: lat, longitude: lon,
         image: imageUrl,
         ownerUid: currentUser.uid,
         ownerEmail: currentUser.email,
@@ -1355,6 +1387,11 @@
             <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path></svg>
             ${d.location} ${d.colour ? '• ' + d.colour : ''}
           </div>
+          ${(d.latitude && d.longitude) ? `
+            <div style="font-size:0.72rem; color:var(--slate-400); margin-top:-6px; margin-bottom:10px;">
+              GPS: ${d.latitude.toFixed(4)}, ${d.longitude.toFixed(4)}
+            </div>
+          ` : ""}
           <p class="item-desc">${d.description || "No further details provided."}</p>
           ${extraHtml}
           ${canMessage && d.status !== 'resolved' ? `
