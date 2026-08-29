@@ -394,6 +394,12 @@
     box-shadow: 0 2px 6px rgba(79, 70, 229, 0.3);
   }
   button.btn-primary:hover { background: var(--primary-hover); }
+  button.btn:active { transform: scale(0.97); }
+  button.btn:disabled {
+    opacity: 0.65;
+    cursor: not-allowed;
+    transform: none;
+  }
   button.btn-secondary {
     background: var(--white);
     color: var(--slate-700);
@@ -612,9 +618,14 @@
       display: none;
       width: 100%;
       flex-direction: column;
+      align-items: stretch;
       padding-top: 12px;
+      margin-top: 8px;
+      border-top: 1px solid var(--slate-200);
+      gap: 4px;
     }
     .nav-links.show { display: flex; }
+    .nav-links .nav-btn { justify-content: flex-start; padding: 10px 12px; }
     .mobile-toggle { display: block; }
     .form-grid { grid-template-columns: 1fr; }
     .form-group.full { grid-column: span 1; }
@@ -801,36 +812,38 @@
       <h2 style="margin-bottom: 6px; font-size: 1.5rem; font-weight: 800;">Welcome to FindIt</h2>
       <p style="color: var(--slate-500); font-size: 0.9rem; margin-bottom: 24px;">Log in or create an account to manage reports.</p>
       
-      <div class="form-group">
-        <label>Email Address</label>
-        <input type="email" id="authEmail" placeholder="student@university.edu">
-      </div>
-      <div class="form-group">
-        <label>College Category <span style="font-weight:400; color:var(--slate-400);">(required for Sign Up)</span></label>
-        <select id="authCollegeCategory">
-          <option value="">Select category...</option>
-          <option value="IIT">IIT</option>
-          <option value="NIT">NIT</option>
-          <option value="IIIT">IIIT</option>
-          <option value="Other">Other</option>
-        </select>
-      </div>
-      <div class="form-group" id="authCollegeWrap" style="display:none;">
-        <label>College</label>
-        <select id="authCollege">
-          <option value="">Select your college...</option>
-        </select>
-        <input type="text" id="authCollegeOther" placeholder="Type your college name" style="display:none; margin-top:8px;">
-      </div>
-      <div class="form-group">
-        <label>Password</label>
-        <input type="password" id="authPassword" placeholder="6+ characters">
-      </div>
-      <div style="display:flex; gap:10px; margin-top: 10px;">
-        <button class="btn btn-primary" id="loginBtn" style="flex:1;">Log In</button>
-        <button class="btn btn-secondary" id="signupBtn" style="flex:1;">Sign Up</button>
-      </div>
-      <div id="authStatus"></div>
+      <form id="authForm">
+        <div class="form-group">
+          <label>Email Address</label>
+          <input type="email" id="authEmail" placeholder="student@university.edu">
+        </div>
+        <div class="form-group">
+          <label>College Category <span style="font-weight:400; color:var(--slate-400);">(required for Sign Up)</span></label>
+          <select id="authCollegeCategory">
+            <option value="">Select category...</option>
+            <option value="IIT">IIT</option>
+            <option value="NIT">NIT</option>
+            <option value="IIIT">IIIT</option>
+            <option value="Other">Other</option>
+          </select>
+        </div>
+        <div class="form-group" id="authCollegeWrap" style="display:none;">
+          <label>College</label>
+          <select id="authCollege">
+            <option value="">Select your college...</option>
+          </select>
+          <input type="text" id="authCollegeOther" placeholder="Type your college name" style="display:none; margin-top:8px;">
+        </div>
+        <div class="form-group">
+          <label>Password</label>
+          <input type="password" id="authPassword" placeholder="6+ characters">
+        </div>
+        <div style="display:flex; gap:10px; margin-top: 10px;">
+          <button type="submit" class="btn btn-primary" id="loginBtn" style="flex:1;">Log In</button>
+          <button type="button" class="btn btn-secondary" id="signupBtn" style="flex:1;">Sign Up</button>
+        </div>
+        <div id="authStatus"></div>
+      </form>
     </div>
   </section>
 
@@ -993,7 +1006,7 @@
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
   import {
     getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword,
-    signOut, onAuthStateChanged
+    signOut, onAuthStateChanged, setPersistence, browserSessionPersistence
   } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
   import {
     getFirestore, collection, addDoc, onSnapshot, serverTimestamp, deleteDoc, doc,
@@ -1013,6 +1026,12 @@
 
   const app = initializeApp(firebaseConfig);
   const auth = getAuth(app);
+  // Use session storage instead of IndexedDB for login persistence — mobile
+  // Chrome restricts IndexedDB on file:// pages, which was causing login to
+  // hang forever on real devices (desktop-site mode masked this).
+  setPersistence(auth, browserSessionPersistence).catch((err) => {
+    console.warn("Could not set auth persistence:", err.message);
+  });
   const db = getFirestore(app);
   const itemsRef = collection(db, "items");
   const usersRef = collection(db, "users");
@@ -1197,6 +1216,15 @@
     if (!isOther) authCollegeOther.value = "";
   });
 
+  // Wraps a promise with a hard time limit so a stuck network/browser call
+  // can never leave a button stuck on "Logging in..." forever.
+  function withTimeout(promise, ms, timeoutMessage) {
+    return Promise.race([
+      promise,
+      new Promise((_, reject) => setTimeout(() => reject(new Error(timeoutMessage)), ms))
+    ]);
+  }
+
   function getSelectedCollege() {
     if (authCollege.value === "__other__") {
       return authCollegeOther.value.trim();
@@ -1204,15 +1232,26 @@
     return authCollege.value.trim();
   }
 
-  document.getElementById("signupBtn").addEventListener("click", async () => {
+  const signupBtnEl = document.getElementById("signupBtn");
+  const loginBtnEl = document.getElementById("loginBtn");
+
+  signupBtnEl.addEventListener("click", async () => {
     const college = getSelectedCollege();
     if (!college) {
       authStatus.textContent = "Please select your college to sign up.";
       authStatus.className = "error";
       return;
     }
+    signupBtnEl.disabled = true;
+    loginBtnEl.disabled = true;
+    const originalText = signupBtnEl.textContent;
+    signupBtnEl.textContent = "Signing up...";
     try {
-      const cred = await createUserWithEmailAndPassword(auth, authEmail.value, authPassword.value);
+      const cred = await withTimeout(
+        createUserWithEmailAndPassword(auth, authEmail.value, authPassword.value),
+        15000,
+        "Sign up timed out. Check your connection and try again."
+      );
       await setDoc(doc(db, "users", cred.user.uid), {
         email: authEmail.value,
         college: college
@@ -1222,18 +1261,35 @@
     } catch (err) {
       authStatus.textContent = err.message;
       authStatus.className = "error";
+    } finally {
+      signupBtnEl.disabled = false;
+      loginBtnEl.disabled = false;
+      signupBtnEl.textContent = originalText;
     }
   });
 
-  document.getElementById("loginBtn").addEventListener("click", async () => {
+  document.getElementById("authForm").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    signupBtnEl.disabled = true;
+    loginBtnEl.disabled = true;
+    const originalText = loginBtnEl.textContent;
+    loginBtnEl.textContent = "Logging in...";
     try {
-      await signInWithEmailAndPassword(auth, authEmail.value, authPassword.value);
+      await withTimeout(
+        signInWithEmailAndPassword(auth, authEmail.value, authPassword.value),
+        15000,
+        "Login timed out. Check your connection and try again."
+      );
       authStatus.textContent = "Authenticated successfully.";
       authStatus.className = "success";
       setTimeout(() => showPage("home"), 500);
     } catch (err) {
       authStatus.textContent = err.message;
       authStatus.className = "error";
+    } finally {
+      signupBtnEl.disabled = false;
+      loginBtnEl.disabled = false;
+      loginBtnEl.textContent = originalText;
     }
   });
 
