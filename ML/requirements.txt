@@ -1,10 +1,6 @@
---extra-index-url https://download.pytorch.org/whl/cpu
-torch
-torchvision
-transformers
-sentence-transformers
-pillow
-numpy
 fastapi
 uvicorn
+requests
+numpy
+pillow
 python-multipart
