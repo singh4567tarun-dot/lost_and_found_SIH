@@ -15,8 +15,9 @@ from ml_engine import (
     extract_text_embedding,
 )
 
-app = FastAPI(title="SIH 2026 Lost & Found ML Engine API")
+app = FastAPI(title="SIH 2026 Lost & Found ML Engine Microservice")
 
+# Enable CORS for cross-origin requests from GitHub Pages or Vercel
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -31,6 +32,15 @@ os.makedirs(UPLOAD_DIR, exist_ok=True)
 FOUND_ITEMS_DB = []
 
 
+@app.get("/")
+def health_check():
+    return {
+        "status": "online",
+        "service": "SIH 2026 Multimodal ML Engine",
+        "stored_found_items": len(FOUND_ITEMS_DB),
+    }
+
+
 @app.post("/api/report-found")
 async def report_found_item(
     title: str = Form(...),
@@ -38,6 +48,8 @@ async def report_found_item(
     latitude: float = Form(...),
     longitude: float = Form(...),
     timestamp: str = Form(...),
+    owner_email: str = Form(...),
+    firestore_id: Optional[str] = Form(None),
     image: Optional[UploadFile] = File(None),
 ):
     item_id = len(FOUND_ITEMS_DB) + 1
@@ -56,11 +68,13 @@ async def report_found_item(
 
     record = {
         "id": item_id,
+        "firestore_id": firestore_id,
         "title": title,
         "description": description,
         "latitude": latitude,
         "longitude": longitude,
         "timestamp": timestamp,
+        "owner_email": owner_email,
         "image_path": image_path,
         "sbert_text_vector": sbert_text_vec,
         "clip_text_vector": clip_text_vec,
@@ -70,9 +84,9 @@ async def report_found_item(
     FOUND_ITEMS_DB.append(record)
     return {
         "status": "success",
-        "message": f"Found item '{title}' registered successfully!",
         "item_id": item_id,
-        "has_image": image_vec is not None,
+        "firestore_id": firestore_id,
+        "owner_email": owner_email,
     }
 
 
@@ -109,7 +123,7 @@ async def match_lost_item(
             query_sbert_text_vec, item["sbert_text_vector"]
         )
 
-        # 2. Image-to-Image Similarity (CLIP Image vs CLIP Image) with CALIBRATION
+        # 2. Image-to-Image Similarity
         s_image = 0.0
         if has_lost_image and has_found_image:
             raw_img_score = compute_cosine_similarity(
@@ -117,7 +131,7 @@ async def match_lost_item(
             )
             s_image = calibrate_image_score(raw_img_score)
 
-        # 3. Cross-Modal Text-to-Image Similarity (CLIP Text vs CLIP Image) with CALIBRATION
+        # 3. Cross-Modal Text-to-Image Similarity
         s_cross = 0.0
         image_mode = "none"
 
@@ -136,7 +150,7 @@ async def match_lost_item(
             s_cross = calibrate_cross_modal_score(raw_cross)
             image_mode = "one_side"
 
-        # 4. Geospatial & Temporal Similarity
+        # 4. Spatial & Temporal Similarity
         s_geo = compute_geospatial_similarity(
             latitude, longitude, item["latitude"], item["longitude"]
         )
@@ -150,8 +164,10 @@ async def match_lost_item(
         candidate_results.append(
             {
                 "found_item_id": item["id"],
+                "firestore_id": item["firestore_id"],
                 "title": item["title"],
                 "description": item["description"],
+                "owner_email": item["owner_email"],  # Real reporter email returned
                 "confidence_score": s_total,
                 "match_percentage": f"{round(s_total * 100, 1)}%",
                 "score_breakdown": {

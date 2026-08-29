@@ -6,11 +6,11 @@ from PIL import Image
 from sentence_transformers import SentenceTransformer
 from transformers import CLIPModel, CLIPProcessor
 
-# 1. Initialize GPU Device
+# 1. Automatic GPU/CPU Auto-Detection (Runs on RTX 4060 locally or Cloud CPU on HF)
 device = "cuda" if torch.cuda.is_available() else "cpu"
-print(f"[ML Engine] Initializing models on device: {device}")
+print(f"[ML Engine] Initializing PyTorch models on device: {device}")
 
-# 2. Load Models onto GPU
+# 2. Load Lightweight Transformer Backbones
 sbert_model = SentenceTransformer("all-MiniLM-L6-v2", device=device)
 clip_model = CLIPModel.from_pretrained("openai/clip-vit-base-patch32").to(
     device
@@ -28,7 +28,7 @@ def extract_text_embedding(text: str) -> np.ndarray:
 
 
 def extract_image_embedding(image_path: str) -> np.ndarray:
-    """Generates 512-dimensional normalized image vector using CLIP on GPU."""
+    """Generates 512-dimensional normalized image vector using CLIP."""
     try:
         image = Image.open(image_path).convert("RGB")
         inputs = clip_processor(images=image, return_tensors="pt")
@@ -36,7 +36,6 @@ def extract_image_embedding(image_path: str) -> np.ndarray:
         with torch.no_grad():
             features = clip_model.get_image_features(**inputs)
 
-        # Handle Transformers output wrappers
         if hasattr(features, "pooler_output") and features.pooler_output is not None:
             features = features.pooler_output
         elif hasattr(features, "image_embeds") and features.image_embeds is not None:
@@ -53,7 +52,7 @@ def extract_image_embedding(image_path: str) -> np.ndarray:
 
 
 def extract_clip_text_embedding(text: str) -> np.ndarray:
-    """Generates 512-dimensional CLIP text embedding for Cross-Modal matching with images."""
+    """Generates 512-dimensional CLIP text embedding for Cross-Modal matching."""
     try:
         inputs = clip_processor(text=[text], return_tensors="pt", padding=True)
         inputs = {k: v.to(device) for k, v in inputs.items()}
@@ -75,34 +74,31 @@ def extract_clip_text_embedding(text: str) -> np.ndarray:
         return None
 
 
-# --- CALIBRATION FUNCTIONS ---
+# --- SCORE CALIBRATION MODULES ---
 
 
 def calibrate_image_score(raw_score: float) -> float:
-    """Normalizes raw CLIP image-to-image cosine similarity (naturally 0.62 to 0.90) onto 0.0 to 1.0."""
+    """Maps raw CLIP image-to-image similarity (0.62 to 0.90) onto 0.0 to 1.0."""
     if raw_score <= 0.62:
         return 0.0
-    min_val = 0.62
-    max_val = 0.90
+    min_val, max_val = 0.62, 0.90
     calibrated = (raw_score - min_val) / (max_val - min_val)
     return float(np.clip(calibrated, 0.0, 1.0))
 
 
 def calibrate_cross_modal_score(raw_score: float) -> float:
-    """Normalizes raw CLIP text-image cosine similarity (naturally 0.15 to 0.35) onto 0.0 to 1.0."""
+    """Maps raw CLIP text-to-image similarity (0.15 to 0.35) onto 0.0 to 1.0."""
     if raw_score <= 0.15:
         return 0.0
-    min_val = 0.15
-    max_val = 0.35
+    min_val, max_val = 0.15, 0.35
     calibrated = (raw_score - min_val) / (max_val - min_val)
     return float(np.clip(calibrated, 0.0, 1.0))
 
 
-# --- MATHEMATICAL SIMILARITY FORMULAS ---
+# --- SIMILARITY FORMULAS ---
 
 
 def compute_cosine_similarity(vec1: np.ndarray, vec2: np.ndarray) -> float:
-    """Calculates cosine similarity between two normalized vectors."""
     if vec1 is None or vec2 is None:
         return 0.0
     sim = np.dot(vec1, vec2)
@@ -112,12 +108,10 @@ def compute_cosine_similarity(vec1: np.ndarray, vec2: np.ndarray) -> float:
 def compute_haversine_distance(
     lat1: float, lon1: float, lat2: float, lon2: float
 ) -> float:
-    """Calculates physical distance in meters between two geographical coordinates."""
     R = 6371000.0
     phi1, phi2 = math.radians(lat1), math.radians(lat2)
     dphi = math.radians(lat2 - lat1)
     dlambda = math.radians(lon2 - lon1)
-
     a = (
         math.sin(dphi / 2) ** 2
         + math.cos(phi1) * math.cos(phi2) * math.sin(dlambda / 2) ** 2
@@ -129,31 +123,21 @@ def compute_haversine_distance(
 def compute_geospatial_similarity(
     lat1: float, lon1: float, lat2: float, lon2: float, sigma: float = 200.0
 ) -> float:
-    """Calculates S_geo using Gaussian radial decay kernel (default radius sigma = 200m)."""
     distance = compute_haversine_distance(lat1, lon1, lat2, lon2)
-    s_geo = math.exp(-((distance**2) / (2 * (sigma**2))))
-    return s_geo
+    return math.exp(-((distance**2) / (2 * (sigma**2))))
 
 
 def compute_temporal_similarity(
     lost_time_str: str, found_time_str: str, tau_hours: float = 48.0
 ) -> float:
-    """Calculates S_time using asymmetric exponential decay kernel."""
     try:
-        t_lost = datetime.fromisoformat(lost_time_str)
-        t_found = datetime.fromisoformat(found_time_str)
-
-        delta_t_seconds = (t_found - t_lost).total_seconds()
-        delta_t_hours = delta_t_seconds / 3600.0
-
+        t_lost = datetime.fromisoformat(lost_time_str.replace("Z", "+00:00"))
+        t_found = datetime.fromisoformat(found_time_str.replace("Z", "+00:00"))
+        delta_t_hours = (t_found - t_lost).total_seconds() / 3600.0
         if delta_t_hours < -2.0:
             return 0.0
-
-        delta_t_hours = max(0.0, delta_t_hours)
-        s_time = math.exp(-delta_t_hours / tau_hours)
-        return s_time
-    except Exception as e:
-        print(f"Error computing temporal similarity: {e}")
+        return math.exp(-max(0.0, delta_t_hours) / tau_hours)
+    except Exception:
         return 0.5
 
 
@@ -165,7 +149,6 @@ def compute_fusion_score(
     s_time: float,
     image_mode: str = "none",
 ) -> float:
-    """Synthesizes calibrated component scores into composite score S_total."""
     if image_mode == "both":
         w_t, w_i, w_c, w_g, w_tau = 0.25, 0.40, 0.00, 0.175, 0.175
     elif image_mode == "one_side":
@@ -181,31 +164,3 @@ def compute_fusion_score(
         + (w_tau * s_time)
     )
     return round(float(s_total), 4)
-
-
-if __name__ == "__main__":
-    print("\n--- RUNNING ML ENGINE UNIT TEST ---")
-    txt_lost = "Lost black leather wallet near central library"
-    txt_found = "Found dark leather wallet near central library"
-
-    v_lost = extract_text_embedding(txt_lost)
-    v_found = extract_text_embedding(txt_found)
-
-    s_text = compute_cosine_similarity(v_lost, v_found)
-    s_geo = compute_geospatial_similarity(
-        25.4920, 81.8639, 25.4924, 81.8642, sigma=200.0
-    )
-    s_time = compute_temporal_similarity(
-        "2026-08-28T10:00:00", "2026-08-28T13:00:00", tau_hours=48.0
-    )
-
-    s_total = compute_fusion_score(
-        s_text=s_text,
-        s_image=0.0,
-        s_cross=0.0,
-        s_geo=s_geo,
-        s_time=s_time,
-        image_mode="none",
-    )
-    print(f"Composite Fusion Score (S_total): {s_total} ({s_total * 100:.1f}%)")
-    print("--- UNIT TEST COMPLETE ---")
