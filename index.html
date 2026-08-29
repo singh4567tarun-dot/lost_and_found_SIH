@@ -39,6 +39,7 @@
     --rose-50: #fff1f2;
     --amber-500: #f59e0b;
     --amber-50: #fffbeb;
+    --slate-300: #cbd5e1;
     --white: #ffffff;
     --radius-lg: 16px;
     --radius-md: 10px;
@@ -212,10 +213,79 @@
     margin-bottom: 24px;
   }
 
+  /* Auth: separate, standalone Log In / Sign Up pages */
+  .auth-solo-wrap {
+    max-width: 440px;
+    margin: 56px auto;
+    padding: 0 20px;
+  }
+  .auth-solo-card {
+    background: var(--white);
+    border: 1px solid var(--slate-200);
+    border-top: 4px solid var(--auth-accent);
+    border-radius: var(--radius-lg);
+    padding: 32px 30px 28px;
+    box-shadow: var(--shadow-sm);
+    text-align: center;
+  }
+  .auth-solo-card form {
+    text-align: left;
+  }
+  .auth-solo-card.login-solo { --auth-accent: var(--primary); }
+  .auth-solo-card.signup-solo { --auth-accent: var(--emerald-500); }
+  .auth-solo-icon {
+    width: 46px;
+    height: 46px;
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: color-mix(in srgb, var(--auth-accent) 14%, var(--white));
+    color: var(--auth-accent);
+    margin: 0 auto 16px;
+  }
+  .auth-solo-card h2 {
+    font-size: 1.5rem;
+    font-weight: 800;
+    margin-bottom: 4px;
+  }
+  .auth-solo-sub {
+    color: var(--slate-500);
+    font-size: 0.9rem;
+    margin-bottom: 22px;
+  }
+  .auth-solo-card.login-solo button.btn-primary {
+    background: var(--auth-accent);
+    box-shadow: 0 2px 6px color-mix(in srgb, var(--auth-accent) 35%, transparent);
+  }
+  .auth-solo-card.login-solo button.btn-primary:hover { background: var(--primary-hover); }
+  .auth-solo-card.signup-solo button.btn-primary {
+    background: var(--auth-accent);
+    box-shadow: 0 2px 6px color-mix(in srgb, var(--auth-accent) 35%, transparent);
+  }
+  .auth-solo-card.signup-solo button.btn-primary:hover { background: var(--emerald-600); }
+  .auth-switch-link {
+    text-align: center;
+    margin-top: 18px;
+    font-size: 0.88rem;
+    color: var(--slate-500);
+  }
+  .auth-switch-link button {
+    background: none;
+    border: none;
+    padding: 0;
+    color: var(--auth-accent);
+    font-weight: 700;
+    font-size: inherit;
+    font-family: inherit;
+    cursor: pointer;
+    text-decoration: underline;
+  }
+
   /* Hero Section */
   .hero-card {
-    background: linear-gradient(135deg, var(--slate-900) 0%, #1e1b4b 100%);
-    color: var(--white);
+    background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%);
+    color: #ffffff;
     padding: 48px 40px;
     border-radius: 20px;
     position: relative;
@@ -252,10 +322,11 @@
     line-height: 1.2;
     margin-bottom: 16px;
     letter-spacing: -0.02em;
+    color: #ffffff;
   }
   .hero-card p {
     font-size: 1.05rem;
-    color: var(--slate-300);
+    color: #cbd5e1;
     max-width: 600px;
     margin-bottom: 28px;
   }
@@ -446,7 +517,9 @@
   .items-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    grid-auto-rows: 1fr;
     gap: 20px;
+    align-items: stretch;
   }
   .item-card {
     background: var(--white);
@@ -457,6 +530,7 @@
     transition: transform 0.2s, box-shadow 0.2s;
     display: flex;
     flex-direction: column;
+    height: 100%;
   }
   .item-card:hover {
     transform: translateY(-3px);
@@ -560,6 +634,44 @@
     font-size: 0.75rem;
   }
 
+  /* Dashboard card action row — always pinned to the card's bottom edge,
+     regardless of how much description/match content sits above it. */
+  .item-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: auto;
+    padding-top: 14px;
+  }
+  .item-actions .btn {
+    flex: 1;
+    padding: 8px 12px;
+    font-size: 0.82rem;
+  }
+  .item-actions .delete-btn {
+    background: rgba(225, 29, 72, 0.1);
+    color: var(--rose-600);
+    border: 1px solid rgba(225, 29, 72, 0.3);
+  }
+  .item-actions .delete-btn:hover {
+    background: rgba(225, 29, 72, 0.18);
+  }
+  .item-actions .resolve-btn {
+    background: rgba(16, 185, 129, 0.1);
+    color: var(--emerald-600);
+    border: 1px solid rgba(16, 185, 129, 0.28);
+  }
+  .item-actions .resolve-btn:hover {
+    background: rgba(16, 185, 129, 0.18);
+  }
+  .item-actions .resolve-btn[data-status="resolved"] {
+    background: rgba(245, 158, 11, 0.1);
+    color: var(--amber-500);
+    border-color: rgba(245, 158, 11, 0.3);
+  }
+  .item-actions .resolve-btn[data-status="resolved"]:hover {
+    background: rgba(245, 158, 11, 0.18);
+  }
+
   /* Empty States & Status Messages */
   .empty-state {
     text-align: center;
@@ -571,7 +683,7 @@
   }
   .empty-state svg { margin-bottom: 12px; color: var(--slate-400); }
 
-  #status, #reportStatus, #authStatus {
+  #status, #reportStatus, #loginStatus, #signupStatus {
     font-size: 0.875rem;
     font-weight: 600;
     margin-top: 10px;
@@ -579,13 +691,13 @@
     border-radius: var(--radius-sm);
     display: none;
   }
-  #status.success, #reportStatus.success, #authStatus.success {
+  #status.success, #reportStatus.success, #loginStatus.success, #signupStatus.success {
     display: block;
     background: var(--emerald-50);
     color: var(--emerald-600);
     border: 1px solid #a7f3d0;
   }
-  #status.error, #reportStatus.error, #authStatus.error {
+  #status.error, #reportStatus.error, #loginStatus.error, #signupStatus.error {
     display: block;
     background: var(--rose-50);
     color: var(--rose-600);
@@ -650,7 +762,6 @@
   .status-badge.resolved { background: var(--emerald-50); color: var(--emerald-600); }
 
   .message-btn { margin-top: 10px; padding: 6px 14px; font-size: 0.8rem; }
-  .resolve-btn { margin-top: 6px; margin-left: 6px; padding: 6px 12px; font-size: 0.8rem; }
 
   /* Messages / chat UI */
   .conversation-item {
@@ -725,7 +836,7 @@
         <svg id="darkModeIcon" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"></path></svg>
       </button>
       <span id="headerWhoami" class="header-whoami" style="display:none;"></span>
-      <button class="nav-btn primary-cta" data-page="auth" id="authNavBtn">Log In / Sign Up</button>
+      <button class="nav-btn primary-cta" data-page="login" id="authNavBtn">Log In / Sign Up</button>
       <button class="nav-btn btn-secondary" id="logoutBtn" style="display:none;">Log Out</button>
     </div>
   </div>
@@ -807,43 +918,70 @@
   </section>
 
   <!-- AUTH SECTION -->
-  <section id="auth">
-    <div class="card" style="max-width: 440px; margin: 40px auto;">
-      <h2 style="margin-bottom: 6px; font-size: 1.5rem; font-weight: 800;">Welcome to FindIt</h2>
-      <p style="color: var(--slate-500); font-size: 0.9rem; margin-bottom: 24px;">Log in or create an account to manage reports.</p>
-      
-      <form id="authForm">
-        <div class="form-group">
-          <label>Email Address</label>
-          <input type="email" id="authEmail" placeholder="student@university.edu">
+  <section id="login">
+    <div class="auth-solo-wrap">
+      <div class="auth-solo-card login-solo">
+        <div class="auth-solo-icon">
+          <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"></rect><path d="M7 11V7a5 5 0 0110 0v4"></path></svg>
         </div>
-        <div class="form-group">
-          <label>College Category <span style="font-weight:400; color:var(--slate-400);">(required for Sign Up)</span></label>
-          <select id="authCollegeCategory">
-            <option value="">Select category...</option>
-            <option value="IIT">IIT</option>
-            <option value="NIT">NIT</option>
-            <option value="IIIT">IIIT</option>
-            <option value="Other">Other</option>
-          </select>
+        <h2>Log In</h2>
+        <p class="auth-solo-sub">Welcome back to FindIt.</p>
+        <form id="loginForm">
+          <div class="form-group">
+            <label>Email Address</label>
+            <input type="email" id="loginEmail" placeholder="student@university.edu">
+          </div>
+          <div class="form-group">
+            <label>Password</label>
+            <input type="password" id="loginPassword" placeholder="6+ characters">
+          </div>
+          <button type="submit" class="btn btn-primary" id="loginBtn" style="width:100%; margin-top:6px;">Log In</button>
+        </form>
+        <div id="loginStatus"></div>
+        <div class="auth-switch-link">New to FindIt? <button type="button" id="goToSignup">Sign Up</button></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="signup">
+    <div class="auth-solo-wrap">
+      <div class="auth-solo-card signup-solo">
+        <div class="auth-solo-icon">
+          <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 00-4-4H6a4 4 0 00-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M20 8v6M23 11h-6"></path></svg>
         </div>
-        <div class="form-group" id="authCollegeWrap" style="display:none;">
-          <label>College</label>
-          <select id="authCollege">
-            <option value="">Select your college...</option>
-          </select>
-          <input type="text" id="authCollegeOther" placeholder="Type your college name" style="display:none; margin-top:8px;">
-        </div>
-        <div class="form-group">
-          <label>Password</label>
-          <input type="password" id="authPassword" placeholder="6+ characters">
-        </div>
-        <div style="display:flex; gap:10px; margin-top: 10px;">
-          <button type="submit" class="btn btn-primary" id="loginBtn" style="flex:1;">Log In</button>
-          <button type="button" class="btn btn-secondary" id="signupBtn" style="flex:1;">Sign Up</button>
-        </div>
-        <div id="authStatus"></div>
-      </form>
+        <h2>Sign Up</h2>
+        <p class="auth-solo-sub">Create an account with your college.</p>
+        <form id="signupForm">
+          <div class="form-group">
+            <label>Email Address</label>
+            <input type="email" id="signupEmail" placeholder="student@university.edu">
+          </div>
+          <div class="form-group">
+            <label>College Category</label>
+            <select id="signupCollegeCategory">
+              <option value="">Select category...</option>
+              <option value="IIT">IIT</option>
+              <option value="NIT">NIT</option>
+              <option value="IIIT">IIIT</option>
+              <option value="Other">Other</option>
+            </select>
+          </div>
+          <div class="form-group" id="signupCollegeWrap" style="display:none;">
+            <label>College</label>
+            <select id="signupCollege">
+              <option value="">Select your college...</option>
+            </select>
+            <input type="text" id="signupCollegeOther" placeholder="Type your college name" style="display:none; margin-top:8px;">
+          </div>
+          <div class="form-group">
+            <label>Password</label>
+            <input type="password" id="signupPassword" placeholder="6+ characters">
+          </div>
+          <button type="submit" class="btn btn-primary" id="signupBtn" style="width:100%; margin-top:6px;">Sign Up</button>
+        </form>
+        <div id="signupStatus"></div>
+        <div class="auth-switch-link">Already have an account? <button type="button" id="goToLogin">Log In</button></div>
+      </div>
     </div>
   </section>
 
@@ -997,7 +1135,7 @@
 </script>
 
 <!-- UNDO TOAST -->
-<div id="toast" style="display:none; position:fixed; bottom:24px; left:50%; transform:translateX(-50%); background:var(--slate-900); color:white; padding:12px 20px; border-radius:var(--radius-md); align-items:center; gap:16px; box-shadow:var(--shadow-lg); z-index:100;">
+<div id="toast" style="display:none; position:fixed; bottom:24px; left:50%; transform:translateX(-50%); background:#0f172a; color:#ffffff; padding:12px 20px; border-radius:var(--radius-md); align-items:center; gap:16px; box-shadow:var(--shadow-lg); z-index:100;">
   <span id="toastMessage" style="font-size:0.9rem; font-weight:500;"></span>
   <button id="toastUndoBtn" style="padding:6px 14px; font-size:0.85rem; background:var(--amber-500); color:white; border:none; border-radius:var(--radius-sm); cursor:pointer; font-weight:700;">Undo</button>
 </div>
@@ -1082,18 +1220,25 @@
   });
 
   // Auth Logic
-  const authEmail = document.getElementById("authEmail");
-  const authPassword = document.getElementById("authPassword");
-  const authStatus = document.getElementById("authStatus");
+  const loginEmail = document.getElementById("loginEmail");
+  const loginPassword = document.getElementById("loginPassword");
+  const loginStatus = document.getElementById("loginStatus");
+  const signupEmail = document.getElementById("signupEmail");
+  const signupPassword = document.getElementById("signupPassword");
+  const signupStatus = document.getElementById("signupStatus");
   const authNavBtn = document.getElementById("authNavBtn");
   const logoutBtn = document.getElementById("logoutBtn");
   const whoami = document.getElementById("whoami");
   const headerWhoami = document.getElementById("headerWhoami");
 
-  const authCollegeCategory = document.getElementById("authCollegeCategory");
-  const authCollegeWrap = document.getElementById("authCollegeWrap");
-  const authCollege = document.getElementById("authCollege");
-  const authCollegeOther = document.getElementById("authCollegeOther");
+  const authCollegeCategory = document.getElementById("signupCollegeCategory");
+  const authCollegeWrap = document.getElementById("signupCollegeWrap");
+  const authCollege = document.getElementById("signupCollege");
+  const authCollegeOther = document.getElementById("signupCollegeOther");
+
+  // Links to switch between the two standalone auth pages.
+  document.getElementById("goToSignup").addEventListener("click", () => showPage("signup"));
+  document.getElementById("goToLogin").addEventListener("click", () => showPage("login"));
 
   // Curated Indian college lists by category.
   // IITs (23) and NITs (31) are the complete official lists.
@@ -1235,59 +1380,57 @@
   const signupBtnEl = document.getElementById("signupBtn");
   const loginBtnEl = document.getElementById("loginBtn");
 
-  signupBtnEl.addEventListener("click", async () => {
+  document.getElementById("signupForm").addEventListener("submit", async (e) => {
+    e.preventDefault();
     const college = getSelectedCollege();
     if (!college) {
-      authStatus.textContent = "Please select your college to sign up.";
-      authStatus.className = "error";
+      signupStatus.textContent = "Please select your college to sign up.";
+      signupStatus.className = "error";
       return;
     }
     signupBtnEl.disabled = true;
-    loginBtnEl.disabled = true;
     const originalText = signupBtnEl.textContent;
     signupBtnEl.textContent = "Signing up...";
     try {
       const cred = await withTimeout(
-        createUserWithEmailAndPassword(auth, authEmail.value, authPassword.value),
+        createUserWithEmailAndPassword(auth, signupEmail.value, signupPassword.value),
         15000,
         "Sign up timed out. Check your connection and try again."
       );
       await setDoc(doc(db, "users", cred.user.uid), {
-        email: authEmail.value,
+        email: signupEmail.value,
         college: college
       });
-      authStatus.textContent = "Account created successfully.";
-      authStatus.className = "success";
+      signupStatus.textContent = "Account created successfully.";
+      signupStatus.className = "success";
+      setTimeout(() => showPage("home"), 500);
     } catch (err) {
-      authStatus.textContent = err.message;
-      authStatus.className = "error";
+      signupStatus.textContent = err.message;
+      signupStatus.className = "error";
     } finally {
       signupBtnEl.disabled = false;
-      loginBtnEl.disabled = false;
       signupBtnEl.textContent = originalText;
     }
   });
 
-  document.getElementById("authForm").addEventListener("submit", async (e) => {
+  document.getElementById("loginForm").addEventListener("submit", async (e) => {
     e.preventDefault();
-    signupBtnEl.disabled = true;
     loginBtnEl.disabled = true;
     const originalText = loginBtnEl.textContent;
     loginBtnEl.textContent = "Logging in...";
     try {
       await withTimeout(
-        signInWithEmailAndPassword(auth, authEmail.value, authPassword.value),
+        signInWithEmailAndPassword(auth, loginEmail.value, loginPassword.value),
         15000,
         "Login timed out. Check your connection and try again."
       );
-      authStatus.textContent = "Authenticated successfully.";
-      authStatus.className = "success";
+      loginStatus.textContent = "Authenticated successfully.";
+      loginStatus.className = "success";
       setTimeout(() => showPage("home"), 500);
     } catch (err) {
-      authStatus.textContent = err.message;
-      authStatus.className = "error";
+      loginStatus.textContent = err.message;
+      loginStatus.className = "error";
     } finally {
-      signupBtnEl.disabled = false;
       loginBtnEl.disabled = false;
       loginBtnEl.textContent = originalText;
     }
@@ -1362,7 +1505,7 @@
     if (!currentUser) {
       reportStatus.textContent = "Please sign in to submit a report.";
       reportStatus.className = "error";
-      showPage("auth");
+      showPage("login");
       return;
     }
 
@@ -1456,12 +1599,14 @@
             </button>
           ` : ""}
           ${showDelete ? `
-            <button class="btn btn-secondary delete-btn" data-id="${d.id}" data-category="${d.category}" style="margin-top:10px; color:var(--rose-600); border-color:#fecdd3; padding:6px 12px; font-size:0.8rem;">
-              Delete Report
-            </button>
-            <button class="btn btn-secondary resolve-btn" data-id="${d.id}" data-status="${d.status || 'open'}">
-              ${d.status === 'resolved' ? 'Reopen Report' : 'Mark as Resolved'}
-            </button>
+            <div class="item-actions">
+              <button class="btn btn-secondary delete-btn" data-id="${d.id}" data-category="${d.category}">
+                Delete Report
+              </button>
+              <button class="btn btn-secondary resolve-btn" data-id="${d.id}" data-status="${d.status || 'open'}">
+                ${d.status === 'resolved' ? 'Reopen Report' : 'Mark as Resolved'}
+              </button>
+            </div>
           ` : ""}
         </div>
       </div>
