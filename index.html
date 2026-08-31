@@ -214,7 +214,7 @@
     margin-bottom: 24px;
   }
 
-  /* Auth */
+  /* Auth: separate, standalone Log In / Sign Up pages */
   .auth-solo-wrap {
     max-width: 440px;
     margin: 56px auto;
@@ -416,7 +416,7 @@
     box-shadow: 0 0 0 3px var(--primary-light);
   }
 
-  /* Image Dropzone */
+  /* Custom Image Upload Dropzone */
   .upload-zone {
     border: 2px dashed var(--slate-300);
     border-radius: var(--radius-md);
@@ -514,7 +514,7 @@
     margin: 0;
   }
 
-  /* Grid Layouts */
+  /* Item Cards Grid */
   .items-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
@@ -611,7 +611,7 @@
     flex: 1;
   }
 
-  /* Matching Box */
+  /* Matching Box inside My Reports */
   .match-section {
     margin-top: 14px;
     padding-top: 14px;
@@ -684,7 +684,7 @@
     background: rgba(245, 158, 11, 0.18);
   }
 
-  /* Status messages */
+  /* Empty States & Status Messages */
   .empty-state {
     text-align: center;
     padding: 48px 20px;
@@ -716,6 +716,7 @@
     border: 1px solid #fecdd3;
   }
 
+  /* How It Works Grid */
   .steps-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
@@ -735,6 +736,7 @@
     margin-bottom: 8px;
   }
 
+  /* Responsive Rules */
   @media (max-width: 768px) {
     .nav-links {
       display: none;
@@ -754,6 +756,7 @@
     .hero-card h1 { font-size: 1.8rem; }
   }
 
+  /* Status badges */
   .status-badge {
     position: absolute;
     top: 12px;
@@ -877,6 +880,7 @@
       </div>
     </div>
 
+    <!-- Dynamic Live Statistics -->
     <div class="stats-grid">
       <div class="stat-card">
         <div class="stat-icon" style="background: var(--primary-light); color: var(--primary);">
@@ -1081,6 +1085,7 @@
       <div class="section-title">All Reported Items</div>
     </div>
 
+    <!-- Interactive Search Bar -->
     <div class="filter-bar">
       <div class="search-input-wrap">
         <svg class="search-icon" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"></circle><path d="m21 21-4.35-4.35"></path></svg>
@@ -1669,7 +1674,6 @@
           formData.append("timestamp", isoTimestamp);
           formData.append("owner_email", currentUser.email);
           formData.append("firestore_id", docRef.id);
-          if (imageUrl) formData.append("image_url", imageUrl);
           if (imageFile) formData.append("image", imageFile);
 
           await fetch(`${FASTAPI_URL}/api/report-found`, {
@@ -1813,7 +1817,7 @@
   searchInput.addEventListener("input", renderBrowseItems);
   typeFilter.addEventListener("change", renderBrowseItems);
 
-  // Modal Image Preview
+  // BROWSE: image modal
   const imageModal = document.getElementById("imageModal");
   const imageModalImg = document.getElementById("imageModalImg");
 
@@ -1837,11 +1841,6 @@
       formData.append("latitude", lostItem.latitude || 25.4920);
       formData.append("longitude", lostItem.longitude || 81.8639);
       formData.append("timestamp", new Date().toISOString());
-      
-      // Pass the Cloudinary image URL to the backend for image-to-image matching
-      if (lostItem.image) {
-        formData.append("image_url", lostItem.image);
-      }
 
       const res = await fetch(`${FASTAPI_URL}/api/match-lost`, {
         method: "POST",
@@ -1851,12 +1850,12 @@
       const data = await res.json();
       return data.matches || [];
     } catch (e) {
-      console.warn("FastAPI ML Server warming up or offline. Using fallback.");
+      console.warn("FastAPI ML Server warming up/offline. Using fallback.");
       return null;
     }
   }
 
-  // Local attribute score fallback
+  // Local attribute score fallback if server is warming up
   function computeMatchScore(lost, found) {
     let score = 0;
     if (lost.category && found.category && lost.category.toLowerCase() === found.category.toLowerCase()) score += 40;
@@ -1922,6 +1921,7 @@
         const aiMatches = await fetchAiMatches(item);
 
         if (aiMatches && aiMatches.length > 0) {
+          // Render Live Cloud AI Matches
           extraHtml = `
             <div class="match-section">
               <span style="font-size:0.8rem; font-weight:700; color:var(--slate-600);">
@@ -1945,6 +1945,7 @@
             </div>
           `;
         } else {
+          // Fallback to local attribute candidate matching
           const candidates = allItems
             .filter(d => d.type === "found" && d.ownerUid !== currentUser.uid)
             .map(d => ({ ...d, score: computeMatchScore(item, d) }))

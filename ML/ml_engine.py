@@ -64,35 +64,19 @@ def extract_text_embedding(text: str) -> np.ndarray:
     return vec / np.linalg.norm(vec)
 
 
-def extract_image_embedding(
-    image_path_or_url: str = None, image_bytes: bytes = None
-) -> np.ndarray:
-    """Extracts 512-dim CLIP visual embedding from a URL, local file path, or raw bytes."""
+def extract_image_embedding(image_path: str) -> np.ndarray:
     try:
-        img_data = None
-        if image_bytes:
-            img_data = image_bytes
-        elif image_path_or_url:
-            if image_path_or_url.startswith(
-                "http://"
-            ) or image_path_or_url.startswith("https://"):
-                img_res = requests.get(image_path_or_url, timeout=10)
-                if img_res.status_code == 200:
-                    img_data = img_res.content
-            elif os.path.exists(image_path_or_url):
-                with open(image_path_or_url, "rb") as f:
-                    img_data = f.read()
-
-        if img_data:
-            result = query_hf_api(CLIP_API_URL, data=img_data)
-            if result is not None:
-                emb = np.array(result)
-                if emb.ndim > 1:
-                    emb = np.mean(emb, axis=0)
-                norm = np.linalg.norm(emb)
-                return emb / norm if norm > 0 else emb
+        with open(image_path, "rb") as f:
+            img_bytes = f.read()
+        result = query_hf_api(CLIP_API_URL, data=img_bytes)
+        if result is not None:
+            emb = np.array(result)
+            if emb.ndim > 1:
+                emb = np.mean(emb, axis=0)
+            norm = np.linalg.norm(emb)
+            return emb / norm if norm > 0 else emb
     except Exception as e:
-        print(f"Image embedding extraction error: {e}")
+        print(f"Image read error: {e}")
 
     vec = np.random.rand(512)
     return vec / np.linalg.norm(vec)
