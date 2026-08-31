@@ -4,7 +4,6 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>FindIt — Smart AI Lost & Found Network</title>
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Crect width='40' height='40' rx='10' fill='%234f46e5'/%3E%3Ccircle cx='17' cy='17' r='8' fill='none' stroke='white' stroke-width='2.6'/%3E%3Cpath d='M23 23l6 6' stroke='white' stroke-width='2.6' stroke-linecap='round'/%3E%3C/svg%3E">
 <script>
   // Apply saved theme immediately, before first paint, to avoid a flash of the wrong theme.
   (function() {
@@ -549,9 +548,6 @@
     height: 100%;
     object-fit: cover;
   }
-  .item-thumb.clickable {
-    cursor: pointer;
-  }
   .item-no-thumb {
     width: 100%;
     height: 100%;
@@ -834,7 +830,7 @@
       <button class="nav-btn active" data-page="home">Home</button>
       <button class="nav-btn" data-page="browse">Browse All Items</button>
       <button class="nav-btn" data-page="report">Report Item</button>
-      <button class="nav-btn" data-page="profile">Profile</button>
+      <button class="nav-btn" data-page="myreports">My Dashboard</button>
       <button class="nav-btn" data-page="messages">Messages</button>
       <button class="icon-toggle-btn" id="darkModeToggle" type="button" title="Toggle dark theme">
         <svg id="darkModeIcon" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"></path></svg>
@@ -847,11 +843,6 @@
 </header>
 
 <main>
-
-  <div id="verifyBanner" style="display:none; align-items:center; justify-content:space-between; gap:12px; background:#FEF3C7; border:1px solid #FDE68A; color:#92400E; padding:12px 18px; border-radius:10px; margin-bottom:20px; font-size:0.9rem;">
-    <span>⚠️ Please verify your email to report items or send messages. Check your inbox for a verification link.</span>
-    <button type="button" id="resendVerifyBtn" style="flex-shrink:0; background:#92400E; color:white; border:none; padding:6px 14px; border-radius:6px; font-size:0.8rem; font-weight:700; cursor:pointer;">Resend Email</button>
-  </div>
 
   <!-- HOME SECTION -->
   <section id="home" class="active">
@@ -961,10 +952,6 @@
         <h2>Sign Up</h2>
         <p class="auth-solo-sub">Create an account with your college.</p>
         <form id="signupForm">
-          <div class="form-group">
-            <label>Username</label>
-            <input type="text" id="signupUsername" placeholder="e.g. tarun_p" maxlength="24">
-          </div>
           <div class="form-group">
             <label>Email Address</label>
             <input type="email" id="signupEmail" placeholder="student@university.edu">
@@ -1091,63 +1078,12 @@
     <div id="itemsList" class="items-grid"></div>
   </section>
 
-  <!-- PROFILE SECTION -->
-  <section id="profile">
-    <div class="section-header">
-      <div class="section-title">Profile</div>
-    </div>
-
-    <div class="card" style="max-width:520px;">
-      <div style="margin-bottom:14px;">
-        <div style="font-size:0.75rem; color:var(--slate-400); font-weight:600; text-transform:uppercase; letter-spacing:0.03em;">Username</div>
-        <div id="profileUsername" style="font-size:1rem; font-weight:700; margin-top:2px;"></div>
-      </div>
-      <div style="margin-bottom:14px;">
-        <div style="font-size:0.75rem; color:var(--slate-400); font-weight:600; text-transform:uppercase; letter-spacing:0.03em;">College</div>
-        <div id="profileCollege" style="font-size:1rem; font-weight:700; margin-top:2px;"></div>
-      </div>
-      <div style="margin-bottom:14px;">
-        <div style="font-size:0.75rem; color:var(--slate-400); font-weight:600; text-transform:uppercase; letter-spacing:0.03em;">Email</div>
-        <div style="display:flex; align-items:center; gap:8px; margin-top:2px;">
-          <span id="profileEmail" style="font-size:1rem; font-weight:700;"></span>
-          <span id="profileVerifiedBadge" class="status-badge" style="position:static;"></span>
-        </div>
-      </div>
-    </div>
-
-    <div class="card" style="max-width:520px; margin-top:16px;">
-      <h3 style="margin-bottom:6px;">Change Email</h3>
-      <p style="font-size:0.85rem; color:var(--slate-500); margin-bottom:14px;">
-        Signed up with the wrong email, or one that doesn't exist? Update it here — you'll need to re-verify the new address.
-      </p>
-      <div class="form-group">
-        <label>New Email</label>
-        <input type="email" id="newEmailInput" placeholder="your-real-email@college.edu">
-      </div>
-      <div class="form-group">
-        <label>Current Password <span style="font-weight:400; color:var(--slate-400);">(required to confirm it's you)</span></label>
-        <input type="password" id="currentPasswordInput" placeholder="Enter your current password">
-      </div>
-      <button type="button" class="btn btn-primary" id="updateEmailBtn">Update Email</button>
-      <div id="profileStatus"></div>
-    </div>
-
-    <div class="card" style="max-width:520px; margin-top:16px;">
-      <h3 style="margin-bottom:6px;">My Dashboard</h3>
-      <p style="font-size:0.85rem; color:var(--slate-500); margin-bottom:14px;">
-        View your reported items, possible matches, and manage your listings.
-      </p>
-      <button type="button" class="btn btn-primary" onclick="window.showPage('myreports')">Go to My Dashboard</button>
-    </div>
-  </section>
-
   <!-- MY REPORTS SECTION -->
   <section id="myreports">
     <div class="section-header">
       <div class="section-title">My Dashboard & Matches</div>
       <span id="whoami" style="font-size: 0.85rem; color: var(--slate-500); font-weight: 500;"></span>
     </div>
-    <button type="button" class="btn btn-secondary" onclick="window.showPage('profile')" style="margin-bottom:16px;">&larr; Back to Profile</button>
 
     <div id="myItemsList"></div>
   </section>
@@ -1204,21 +1140,15 @@
   <button id="toastUndoBtn" style="padding:6px 14px; font-size:0.85rem; background:var(--amber-500); color:white; border:none; border-radius:var(--radius-sm); cursor:pointer; font-weight:700;">Undo</button>
 </div>
 
-<!-- IMAGE PREVIEW MODAL -->
-<div id="imageModal" style="display:none; position:fixed; inset:0; background:rgba(15,23,42,0.85); z-index:200; align-items:center; justify-content:center; cursor:zoom-out; padding:20px;">
-  <img id="imageModalImg" src="" alt="" style="max-width:90%; max-height:90%; border-radius:var(--radius-lg); box-shadow:var(--shadow-lg);">
-</div>
-
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
   import {
     getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword,
-    signOut, onAuthStateChanged, setPersistence, browserSessionPersistence,
-    sendEmailVerification, reload, verifyBeforeUpdateEmail, reauthenticateWithCredential, EmailAuthProvider
+    signOut, onAuthStateChanged, setPersistence, browserSessionPersistence
   } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
   import {
     getFirestore, collection, addDoc, onSnapshot, serverTimestamp, deleteDoc, doc,
-    setDoc, getDoc, getDocs, query, where, updateDoc, orderBy
+    setDoc, getDoc, query, where, updateDoc, orderBy
   } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
   const firebaseConfig = {
@@ -1246,7 +1176,6 @@
 
   let currentUser = null;
   let currentUserCollege = null;
-  let currentUsername = null;
   let hasRestoredPage = false;
   let allItems = [];
 
@@ -1295,78 +1224,12 @@
   const loginPassword = document.getElementById("loginPassword");
   const loginStatus = document.getElementById("loginStatus");
   const signupEmail = document.getElementById("signupEmail");
-  const signupUsername = document.getElementById("signupUsername");
   const signupPassword = document.getElementById("signupPassword");
   const signupStatus = document.getElementById("signupStatus");
   const authNavBtn = document.getElementById("authNavBtn");
   const logoutBtn = document.getElementById("logoutBtn");
   const whoami = document.getElementById("whoami");
   const headerWhoami = document.getElementById("headerWhoami");
-  const verifyBanner = document.getElementById("verifyBanner");
-
-  document.getElementById("resendVerifyBtn").addEventListener("click", async () => {
-    if (!currentUser) return;
-    try {
-      await sendEmailVerification(currentUser);
-      alert("Verification email sent to " + currentUser.email + ". Please check your inbox (and spam folder).");
-    } catch (err) {
-      alert("Couldn't send verification email: " + err.message);
-    }
-  });
-
-  // ---------- PROFILE ----------
-  function renderProfileInfo(user) {
-    document.getElementById("profileUsername").textContent = currentUsername ? "@" + currentUsername : "(not set)";
-    document.getElementById("profileCollege").textContent = currentUserCollege || "(not set)";
-    document.getElementById("profileEmail").textContent = user.email;
-
-    const badge = document.getElementById("profileVerifiedBadge");
-    badge.textContent = user.emailVerified ? "Verified" : "Unverified";
-    badge.className = "status-badge " + (user.emailVerified ? "resolved" : "open");
-    badge.style.position = "static";
-  }
-
-  document.getElementById("updateEmailBtn").addEventListener("click", async () => {
-    const profileStatus = document.getElementById("profileStatus");
-    const newEmail = document.getElementById("newEmailInput").value.trim();
-    const currentPassword = document.getElementById("currentPasswordInput").value;
-    const btn = document.getElementById("updateEmailBtn");
-
-    if (!newEmail || !currentPassword) {
-      profileStatus.textContent = "Please fill in both the new email and your current password.";
-      profileStatus.className = "error";
-      return;
-    }
-    if (!currentUser) return;
-
-    btn.disabled = true;
-    const originalText = btn.textContent;
-    btn.textContent = "Updating...";
-    profileStatus.textContent = "";
-    profileStatus.className = "";
-
-    try {
-      // Firebase requires a recent login before allowing a sensitive change like this
-      const credential = EmailAuthProvider.credential(currentUser.email, currentPassword);
-      await reauthenticateWithCredential(currentUser, credential);
-
-      // Sends the confirmation link to the NEW address, not the old one.
-      // The account's email only actually changes once that link is clicked —
-      // this is what stops someone from "changing" their email to someone else's.
-      await verifyBeforeUpdateEmail(currentUser, newEmail);
-
-      profileStatus.textContent = "Almost done — we sent a confirmation link to " + newEmail + ". Click it from that inbox to finish switching your email. Your login email won't change until then.";
-      profileStatus.className = "success";
-      document.getElementById("newEmailInput").value = "";
-      document.getElementById("currentPasswordInput").value = "";
-    } catch (err) {
-      profileStatus.textContent = err.message;
-      profileStatus.className = "error";
-    } finally {
-      btn.disabled = false;
-      btn.textContent = originalText;
-    }
-  });
 
   const authCollegeCategory = document.getElementById("signupCollegeCategory");
   const authCollegeWrap = document.getElementById("signupCollegeWrap");
@@ -1525,26 +1388,10 @@
       signupStatus.className = "error";
       return;
     }
-    const username = signupUsername.value.trim();
-    if (!/^[a-zA-Z0-9_]{3,24}$/.test(username)) {
-      signupStatus.textContent = "Username must be 3-24 characters: letters, numbers, or underscores only.";
-      signupStatus.className = "error";
-      return;
-    }
     signupBtnEl.disabled = true;
     const originalText = signupBtnEl.textContent;
-    signupBtnEl.textContent = "Checking username...";
+    signupBtnEl.textContent = "Signing up...";
     try {
-      const existing = await getDocs(query(collection(db, "users"), where("username", "==", username)));
-      if (!existing.empty) {
-        signupStatus.textContent = "That username is already taken — please choose another.";
-        signupStatus.className = "error";
-        signupBtnEl.disabled = false;
-        signupBtnEl.textContent = originalText;
-        return;
-      }
-
-      signupBtnEl.textContent = "Signing up...";
       const cred = await withTimeout(
         createUserWithEmailAndPassword(auth, signupEmail.value, signupPassword.value),
         15000,
@@ -1552,13 +1399,11 @@
       );
       await setDoc(doc(db, "users", cred.user.uid), {
         email: signupEmail.value,
-        username: username,
         college: college
       });
-      await sendEmailVerification(cred.user);
-      signupStatus.textContent = "Account created! We've sent a verification link to your email — please verify it before reporting or messaging.";
+      signupStatus.textContent = "Account created successfully.";
       signupStatus.className = "success";
-      setTimeout(() => showPage("home"), 1200);
+      setTimeout(() => showPage("home"), 500);
     } catch (err) {
       signupStatus.textContent = err.message;
       signupStatus.className = "error";
@@ -1599,44 +1444,27 @@
   onAuthStateChanged(auth, async (user) => {
     currentUser = user;
     if (user) {
-      await reload(user); // refresh emailVerified from Firebase's servers, not a stale cached value
-      const userDocRef = doc(db, "users", user.uid);
-      const userDoc = await getDoc(userDocRef);
+      const userDoc = await getDoc(doc(db, "users", user.uid));
       currentUserCollege = userDoc.exists() ? userDoc.data().college : null;
-      currentUsername = userDoc.exists() ? (userDoc.data().username || null) : null;
-
-      // If the user finished a verifyBeforeUpdateEmail confirmation since we last saw them,
-      // Firebase's own record of their email has already moved to the new address (that's
-      // what user.email reflects here) — mirror it into Firestore so the two stay in sync.
-      if (userDoc.exists() && userDoc.data().email !== user.email) {
-        await setDoc(userDocRef, { email: user.email }, { merge: true });
-      }
-      const displayName = currentUsername ? "@" + currentUsername : user.email;
 
       whoami.textContent = currentUserCollege
-        ? `Signed in as: ${displayName} — ${currentUserCollege} Network`
-        : "Signed in as: " + displayName;
+        ? `Signed in as: ${user.email} — ${currentUserCollege} Network`
+        : "Signed in as: " + user.email;
 
       headerWhoami.innerHTML = currentUserCollege
-        ? `${displayName} <span class="college-part">• ${currentUserCollege}</span>`
-        : displayName;
+        ? `${user.email} <span class="college-part">• ${currentUserCollege}</span>`
+        : user.email;
       headerWhoami.style.display = "inline-flex";
 
       authNavBtn.style.display = "none";
       logoutBtn.style.display = "inline-flex";
-
-      verifyBanner.style.display = user.emailVerified ? "none" : "flex";
-
-      renderProfileInfo(user);
     } else {
       currentUserCollege = null;
-      currentUsername = null;
       whoami.textContent = "";
       headerWhoami.textContent = "";
       headerWhoami.style.display = "none";
       authNavBtn.style.display = "inline-flex";
       logoutBtn.style.display = "none";
-      verifyBanner.style.display = "none";
     }
     subscribeToItems();
 
@@ -1680,11 +1508,6 @@
       showPage("login");
       return;
     }
-    if (!currentUser.emailVerified) {
-      reportStatus.textContent = "Please verify your email before reporting an item — check the banner above.";
-      reportStatus.className = "error";
-      return;
-    }
 
     const type = document.getElementById("itemType").value;
     const category = document.getElementById("itemCategory").value.trim();
@@ -1716,7 +1539,6 @@
         image: imageUrl,
         ownerUid: currentUser.uid,
         ownerEmail: currentUser.email,
-        ownerUsername: currentUsername,
         college: currentUserCollege,
         status: "open",
         createdAt: serverTimestamp()
@@ -1744,14 +1566,14 @@
   });
 
   // Card HTML Renderer
-  function renderCard(d, showDelete = false, extraHtml = "", clickableImage = false) {
+  function renderCard(d, showDelete = false, extraHtml = "") {
     const canMessage = !showDelete && currentUser && d.ownerUid !== currentUser.uid;
     return `
       <div class="item-card">
         <div class="item-thumb-wrap">
           <span class="tag-badge ${d.type}">${d.type}</span>
           <span class="status-badge ${d.status === 'resolved' ? 'resolved' : 'open'}">${d.status === 'resolved' ? 'Resolved' : 'Pending'}</span>
-          ${d.image ? `<img src="${d.image}" class="item-thumb${clickableImage ? ' clickable' : ''}" alt="${d.category}">` : `
+          ${d.image ? `<img src="${d.image}" class="item-thumb" alt="${d.category}">` : `
             <div class="item-no-thumb">
               <svg width="36" height="36" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
             </div>
@@ -1770,12 +1592,9 @@
             </div>
           ` : ""}
           <p class="item-desc">${d.description || "No further details provided."}</p>
-          <div style="font-size:0.75rem; color:var(--slate-400); margin-top:6px;">
-            Reported by ${d.ownerUsername ? "@" + d.ownerUsername : "a verified user"}
-          </div>
           ${extraHtml}
           ${canMessage && d.status !== 'resolved' ? `
-            <button class="btn btn-primary message-btn" data-item-id="${d.id}" data-owner-uid="${d.ownerUid}" data-owner-email="${d.ownerEmail}" data-owner-username="${d.ownerUsername || ''}" data-category="${d.category}">
+            <button class="btn btn-primary message-btn" data-item-id="${d.id}" data-owner-uid="${d.ownerUid}" data-owner-email="${d.ownerEmail}" data-category="${d.category}">
               ${d.type === 'found' ? 'This Is Mine — Message' : 'Message Reporter'}
             </button>
           ` : ""}
@@ -1846,29 +1665,13 @@
     if (filtered.length === 0) {
       itemsList.innerHTML = `<div class="empty-state" style="grid-column: 1/-1;">No reported items match your criteria.</div>`;
     } else {
-      itemsList.innerHTML = filtered.map(d => renderCard(d, false, "", true)).join("");
+      itemsList.innerHTML = filtered.map(d => renderCard(d)).join("");
     }
     wireMessageButtons();
   }
 
   searchInput.addEventListener("input", renderBrowseItems);
   typeFilter.addEventListener("change", renderBrowseItems);
-
-  // ---------- BROWSE: click an item's photo to view it larger ----------
-  const imageModal = document.getElementById("imageModal");
-  const imageModalImg = document.getElementById("imageModalImg");
-
-  itemsList.addEventListener("click", (e) => {
-    const img = e.target.closest("img.clickable");
-    if (!img || !img.src) return;
-    imageModalImg.src = img.src;
-    imageModal.style.display = "flex";
-  });
-
-  imageModal.addEventListener("click", () => {
-    imageModal.style.display = "none";
-    imageModalImg.src = "";
-  });
 
   // Matching Scoring Algorithm
   function computeMatchScore(lost, found) {
@@ -1949,12 +1752,11 @@
                   <div>
                     <div style="font-size:0.85rem; font-weight:700;">${c.category}</div>
                     <div style="font-size:0.75rem; color:var(--slate-500);">${c.location}</div>
-                    <div style="font-size:0.72rem; color:var(--slate-400);">${c.ownerUsername ? "@" + c.ownerUsername : "Verified user"}</div>
                   </div>
                   <div style="text-align:right;">
                     <span class="match-score">${c.score}% Match</span>
                     <button class="btn btn-secondary contact-btn" data-email="${c.ownerEmail}" style="display:block; margin-top:4px; padding:3px 8px; font-size:0.75rem;">Email</button>
-                    <button class="btn btn-primary message-btn" data-item-id="${c.id}" data-owner-uid="${c.ownerUid}" data-owner-email="${c.ownerEmail}" data-owner-username="${c.ownerUsername || ''}" data-category="${c.category}" style="display:block; margin-top:4px; padding:3px 8px; font-size:0.75rem;">Message</button>
+                    <button class="btn btn-primary message-btn" data-item-id="${c.id}" data-owner-uid="${c.ownerUid}" data-owner-email="${c.ownerEmail}" data-category="${c.category}" style="display:block; margin-top:4px; padding:3px 8px; font-size:0.75rem;">Message</button>
                   </div>
                 </div>
               `).join("")}
@@ -1972,6 +1774,7 @@
 
     document.querySelectorAll(".contact-btn").forEach(btn => {
       btn.addEventListener("click", () => {
+        btn.textContent = btn.dataset.email;
         window.location.href = `mailto:${btn.dataset.email}`;
       });
     });
@@ -2018,7 +1821,7 @@
   function wireMessageButtons() {
     document.querySelectorAll(".message-btn").forEach(btn => {
       btn.addEventListener("click", () => openConversation(
-        btn.dataset.itemId, btn.dataset.ownerUid, btn.dataset.ownerEmail, btn.dataset.ownerUsername, btn.dataset.category
+        btn.dataset.itemId, btn.dataset.ownerUid, btn.dataset.ownerEmail, btn.dataset.category
       ));
     });
   }
@@ -2026,37 +1829,31 @@
   let activeConversationId = null;
   let unsubscribeChat = null;
 
-  async function openConversation(itemId, otherUid, otherEmail, otherUsername, category) {
+  async function openConversation(itemId, otherUid, otherEmail, category) {
     if (!currentUser) {
       alert("Please log in first.");
       return;
     }
-    if (!currentUser.emailVerified) {
-      alert("Please verify your email before messaging — check the banner at the top of the page.");
-      return;
-    }
     const convId = conversationId(itemId, currentUser.uid, otherUid);
     activeConversationId = convId;
-    const otherDisplayName = otherUsername ? "@" + otherUsername : "Verified user";
 
     // Create/update the conversation's metadata doc so it shows up in each person's list
     await setDoc(doc(db, "conversations", convId), {
       itemId, category,
       participants: [currentUser.uid, otherUid],
       participantEmails: { [currentUser.uid]: currentUser.email, [otherUid]: otherEmail },
-      participantUsernames: { [currentUser.uid]: currentUsername || null, [otherUid]: otherUsername || null },
       updatedAt: serverTimestamp()
     }, { merge: true });
 
     window.showPage("messages");
-    openChatView(convId, otherDisplayName, category);
+    openChatView(convId, otherEmail, category);
   }
 
-  function openChatView(convId, otherDisplayName, category) {
+  function openChatView(convId, otherEmail, category) {
     activeConversationId = convId;
     document.getElementById("conversationsList").style.display = "none";
     document.getElementById("chatView").style.display = "flex";
-    document.getElementById("chatWithLabel").textContent = otherDisplayName;
+    document.getElementById("chatWithLabel").textContent = otherEmail;
     document.getElementById("chatItemLabel").textContent = "Re: " + category;
 
     if (unsubscribeChat) unsubscribeChat();
@@ -2096,10 +1893,6 @@
     const input = document.getElementById("chatInput");
     const text = input.value.trim();
     if (!text || !activeConversationId || !currentUser) return;
-    if (!currentUser.emailVerified) {
-      alert("Please verify your email before sending messages.");
-      return;
-    }
 
     await addDoc(collection(db, "messages"), {
       conversationId: activeConversationId,
@@ -2140,12 +1933,11 @@
 
       listEl.innerHTML = convos.map(c => {
         const otherUid = c.participants.find(uid => uid !== currentUser.uid);
-        const otherUsername = c.participantUsernames ? c.participantUsernames[otherUid] : null;
-        const otherDisplayName = otherUsername ? "@" + otherUsername : "Verified user";
+        const otherEmail = c.participantEmails ? c.participantEmails[otherUid] : "Unknown";
         return `
-          <div class="conversation-item" data-conv-id="${c.id}" data-other-display-name="${otherDisplayName}" data-category="${c.category || ''}">
+          <div class="conversation-item" data-conv-id="${c.id}" data-other-email="${otherEmail}" data-category="${c.category || ''}">
             <div>
-              <div style="font-weight:700; font-size:0.9rem;">${otherDisplayName}</div>
+              <div style="font-weight:700; font-size:0.9rem;">${otherEmail}</div>
               <div style="font-size:0.8rem; color:var(--slate-500);">Re: ${c.category || ''} — ${c.lastMessage || 'No messages yet'}</div>
             </div>
           </div>
@@ -2154,7 +1946,7 @@
 
       document.querySelectorAll(".conversation-item").forEach(el => {
         el.addEventListener("click", () => {
-          openChatView(el.dataset.convId, el.dataset.otherDisplayName, el.dataset.category);
+          openChatView(el.dataset.convId, el.dataset.otherEmail, el.dataset.category);
         });
       });
     }, (err) => {
