@@ -1,109 +1,120 @@
 import math
+import os
+import time
 from datetime import datetime
 import numpy as np
 import requests
 
 # Hugging Face Free Serverless Inference Endpoints
-SBERT_API_URL = "https://api-inference.huggingface.co/pipeline/feature-extraction/sentence-transformers/all-MiniLM-L6-v2"
-CLIP_IMAGE_API_URL = "https://api-inference.huggingface.co/pipeline/feature-extraction/openai/clip-vit-base-patch32"
-CLIP_TEXT_API_URL = "https://api-inference.huggingface.co/pipeline/feature-extraction/openai/clip-vit-base-patch32"
+SBERT_API_URL = "https://api-inference.huggingface.co/models/sentence-transformers/all-MiniLM-L6-v2"
+CLIP_API_URL = (
+    "https://api-inference.huggingface.co/models/openai/clip-vit-base-patch32"
+)
 
-print("[ML Engine] Configured for Serverless Cloud Inference (RAM < 50MB)")
+# Reads token securely from Render Environment Variables
+HF_TOKEN = os.getenv("HF_TOKEN", "")
+HEADERS = {"Authorization": f"Bearer {HF_TOKEN}"} if HF_TOKEN else {}
 
-# --- FEATURE EXTRACTION PIPELINES ---
+
+def query_hf_api(url: str, payload=None, data=None, retries: int = 3):
+    """Queries Hugging Face with automatic retry if model is warming up."""
+    for attempt in range(retries):
+        try:
+            if data is not None:
+                headers = {
+                    **HEADERS,
+                    "Content-Type": "application/octet-stream",
+                }
+                res = requests.post(
+                    url, headers=headers, data=data, timeout=15
+                )
+            else:
+                res = requests.post(
+                    url, headers=HEADERS, json=payload, timeout=15
+                )
+
+            if res.status_code == 200:
+                return res.json()
+            elif res.status_code == 503:
+                time.sleep(4)
+                continue
+            else:
+                print(f"HF API {res.status_code}: {res.text}")
+                break
+        except Exception as e:
+            print(f"HF API connection error: {e}")
+            time.sleep(2)
+    return None
 
 
 def extract_text_embedding(text: str) -> np.ndarray:
-    """Extracts 384-dimensional SBERT text embedding via Serverless API."""
-    try:
-        response = requests.post(
-            SBERT_API_URL, json={"inputs": text}, timeout=10
-        )
-        if response.status_code == 200:
-            data = response.json()
-            embedding = np.array(data)
-            if embedding.ndim > 1:
-                embedding = np.mean(embedding, axis=0)
-            norm = np.linalg.norm(embedding)
-            return embedding / norm if norm > 0 else embedding
-    except Exception as e:
-        print(f"Text embedding API error: {e}")
+    result = query_hf_api(
+        SBERT_API_URL,
+        payload={"inputs": text, "options": {"wait_for_model": True}},
+    )
+    if result is not None:
+        emb = np.array(result)
+        if emb.ndim > 1:
+            emb = np.mean(emb, axis=0)
+        norm = np.linalg.norm(emb)
+        return emb / norm if norm > 0 else emb
 
-    # Fallback pseudo-vector if API is warming up
+    np.random.seed(abs(hash(text)) % (2**32))
     vec = np.random.rand(384)
     return vec / np.linalg.norm(vec)
 
 
 def extract_image_embedding(image_path: str) -> np.ndarray:
-    """Extracts 512-dimensional CLIP image embedding via Serverless API."""
     try:
         with open(image_path, "rb") as f:
             img_bytes = f.read()
-
-        response = requests.post(
-            CLIP_IMAGE_API_URL, data=img_bytes, timeout=10
-        )
-        if response.status_code == 200:
-            data = response.json()
-            embedding = np.array(data)
-            if embedding.ndim > 1:
-                embedding = np.mean(embedding, axis=0)
-            norm = np.linalg.norm(embedding)
-            return embedding / norm if norm > 0 else embedding
+        result = query_hf_api(CLIP_API_URL, data=img_bytes)
+        if result is not None:
+            emb = np.array(result)
+            if emb.ndim > 1:
+                emb = np.mean(emb, axis=0)
+            norm = np.linalg.norm(emb)
+            return emb / norm if norm > 0 else emb
     except Exception as e:
-        print(f"Image embedding API error: {e}")
+        print(f"Image read error: {e}")
 
     vec = np.random.rand(512)
     return vec / np.linalg.norm(vec)
 
 
 def extract_clip_text_embedding(text: str) -> np.ndarray:
-    """Extracts 512-dimensional CLIP text embedding for Cross-Modal matching."""
-    try:
-        response = requests.post(
-            CLIP_TEXT_API_URL, json={"inputs": text}, timeout=10
-        )
-        if response.status_code == 200:
-            data = response.json()
-            embedding = np.array(data)
-            if embedding.ndim > 1:
-                embedding = np.mean(embedding, axis=0)
-            norm = np.linalg.norm(embedding)
-            return embedding / norm if norm > 0 else embedding
-    except Exception as e:
-        print(f"CLIP Text embedding API error: {e}")
+    result = query_hf_api(
+        CLIP_API_URL,
+        payload={"inputs": text, "options": {"wait_for_model": True}},
+    )
+    if result is not None:
+        emb = np.array(result)
+        if emb.ndim > 1:
+            emb = np.mean(emb, axis=0)
+        norm = np.linalg.norm(emb)
+        return emb / norm if norm > 0 else emb
 
+    np.random.seed(abs(hash(text)) % (2**32))
     vec = np.random.rand(512)
     return vec / np.linalg.norm(vec)
-
-
-# --- SCORE CALIBRATION MODULES ---
 
 
 def calibrate_image_score(raw_score: float) -> float:
     if raw_score <= 0.62:
         return 0.0
-    min_val, max_val = 0.62, 0.90
-    calibrated = (raw_score - min_val) / (max_val - min_val)
-    return float(np.clip(calibrated, 0.0, 1.0))
+    return float(np.clip((raw_score - 0.62) / 0.28, 0.0, 1.0))
 
 
 def calibrate_cross_modal_score(raw_score: float) -> float:
     if raw_score <= 0.15:
         return 0.0
-    min_val, max_val = 0.15, 0.35
-    calibrated = (raw_score - min_val) / (max_val - min_val)
-    return float(np.clip(calibrated, 0.0, 1.0))
-
-
-# --- SIMILARITY FORMULAS ---
+    return float(np.clip((raw_score - 0.15) / 0.20, 0.0, 1.0))
 
 
 def compute_cosine_similarity(vec1: np.ndarray, vec2: np.ndarray) -> float:
     if vec1 is None or vec2 is None:
         return 0.0
-    sim = np.dot(vec1, vec2)
-    return float(np.clip(sim, 0.0, 1.0))
+    return float(np.clip(np.dot(vec1, vec2), 0.0, 1.0))
 
 
 def compute_haversine_distance(
@@ -117,15 +128,14 @@ def compute_haversine_distance(
         math.sin(dphi / 2) ** 2
         + math.cos(phi1) * math.cos(phi2) * math.sin(dlambda / 2) ** 2
     )
-    c = 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a))
-    return R * c
+    return R * (2 * math.atan2(math.sqrt(a), math.sqrt(1 - a)))
 
 
 def compute_geospatial_similarity(
     lat1: float, lon1: float, lat2: float, lon2: float, sigma: float = 200.0
 ) -> float:
-    distance = compute_haversine_distance(lat1, lon1, lat2, lon2)
-    return math.exp(-((distance**2) / (2 * (sigma**2))))
+    dist = compute_haversine_distance(lat1, lon1, lat2, lon2)
+    return math.exp(-((dist**2) / (2 * (sigma**2))))
 
 
 def compute_temporal_similarity(
@@ -156,12 +166,13 @@ def compute_fusion_score(
         w_t, w_i, w_c, w_g, w_tau = 0.30, 0.00, 0.35, 0.175, 0.175
     else:
         w_t, w_i, w_c, w_g, w_tau = 0.60, 0.00, 0.00, 0.20, 0.20
-
-    s_total = (
-        (w_t * s_text)
-        + (w_i * s_image)
-        + (w_c * s_cross)
-        + (w_g * s_geo)
-        + (w_tau * s_time)
+    return round(
+        float(
+            w_t * s_text
+            + w_i * s_image
+            + w_c * s_cross
+            + w_g * s_geo
+            + w_tau * s_time
+        ),
+        4,
     )
-    return round(float(s_total), 4)

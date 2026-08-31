@@ -15,9 +15,8 @@ from ml_engine import (
     extract_text_embedding,
 )
 
-app = FastAPI(title="SIH 2026 Lost & Found ML Engine Microservice")
+app = FastAPI(title="SIH 2026 Multimodal ML Microservice")
 
-# Enable CORS for cross-origin requests from GitHub Pages or Vercel
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -26,7 +25,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-UPLOAD_DIR = "./uploaded_images"
+UPLOAD_DIR = "/tmp/uploaded_images"
 os.makedirs(UPLOAD_DIR, exist_ok=True)
 
 FOUND_ITEMS_DB = []
@@ -36,8 +35,8 @@ FOUND_ITEMS_DB = []
 def health_check():
     return {
         "status": "online",
-        "service": "SIH 2026 Multimodal ML Engine",
-        "stored_found_items": len(FOUND_ITEMS_DB),
+        "service": "SIH Multimodal ML Engine",
+        "stored_items": len(FOUND_ITEMS_DB),
     }
 
 
@@ -80,7 +79,6 @@ async def report_found_item(
         "clip_text_vector": clip_text_vec,
         "image_vector": image_vec,
     }
-
     FOUND_ITEMS_DB.append(record)
     return {
         "status": "success",
@@ -118,12 +116,10 @@ async def match_lost_item(
     for item in FOUND_ITEMS_DB:
         has_found_image = item["image_vector"] is not None
 
-        # 1. Text Similarity (SBERT vs SBERT)
         s_text = compute_cosine_similarity(
             query_sbert_text_vec, item["sbert_text_vector"]
         )
 
-        # 2. Image-to-Image Similarity
         s_image = 0.0
         if has_lost_image and has_found_image:
             raw_img_score = compute_cosine_similarity(
@@ -131,7 +127,6 @@ async def match_lost_item(
             )
             s_image = calibrate_image_score(raw_img_score)
 
-        # 3. Cross-Modal Text-to-Image Similarity
         s_cross = 0.0
         image_mode = "none"
 
@@ -150,13 +145,11 @@ async def match_lost_item(
             s_cross = calibrate_cross_modal_score(raw_cross)
             image_mode = "one_side"
 
-        # 4. Spatial & Temporal Similarity
         s_geo = compute_geospatial_similarity(
             latitude, longitude, item["latitude"], item["longitude"]
         )
         s_time = compute_temporal_similarity(timestamp, item["timestamp"])
 
-        # 5. Composite Fusion Score
         s_total = compute_fusion_score(
             s_text, s_image, s_cross, s_geo, s_time, image_mode=image_mode
         )
@@ -167,7 +160,7 @@ async def match_lost_item(
                 "firestore_id": item["firestore_id"],
                 "title": item["title"],
                 "description": item["description"],
-                "owner_email": item["owner_email"],  # Real reporter email returned
+                "owner_email": item["owner_email"],
                 "confidence_score": s_total,
                 "match_percentage": f"{round(s_total * 100, 1)}%",
                 "score_breakdown": {
