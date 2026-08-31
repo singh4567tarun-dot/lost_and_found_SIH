@@ -49,17 +49,17 @@ async def report_found_item(
     timestamp: str = Form(...),
     owner_email: str = Form(...),
     firestore_id: Optional[str] = Form(None),
+    image_url: Optional[str] = Form(None),  # <--- Accepts Cloudinary URL
     image: Optional[UploadFile] = File(None),
 ):
     item_id = len(FOUND_ITEMS_DB) + 1
-    image_path = None
     image_vec = None
 
     if image:
-        image_path = os.path.join(UPLOAD_DIR, f"found_{item_id}_{image.filename}")
-        with open(image_path, "wb") as buffer:
-            shutil.copyfileobj(image.file, buffer)
-        image_vec = extract_image_embedding(image_path)
+        content = await image.read()
+        image_vec = extract_image_embedding(image_bytes=content)
+    elif image_url:
+        image_vec = extract_image_embedding(image_path_or_url=image_url)
 
     full_text = f"{title}. {description}"
     sbert_text_vec = extract_text_embedding(full_text)
@@ -74,7 +74,7 @@ async def report_found_item(
         "longitude": longitude,
         "timestamp": timestamp,
         "owner_email": owner_email,
-        "image_path": image_path,
+        "image_url": image_url,
         "sbert_text_vector": sbert_text_vec,
         "clip_text_vector": clip_text_vec,
         "image_vector": image_vec,
@@ -84,7 +84,7 @@ async def report_found_item(
         "status": "success",
         "item_id": item_id,
         "firestore_id": firestore_id,
-        "owner_email": owner_email,
+        "has_image": image_vec is not None,
     }
 
 
@@ -94,18 +94,16 @@ async def match_lost_item(
     latitude: float = Form(...),
     longitude: float = Form(...),
     timestamp: str = Form(...),
+    image_url: Optional[str] = Form(None),  # <--- Accepts Cloudinary URL
     image: Optional[UploadFile] = File(None),
 ):
-    query_img_path = None
     query_img_vec = None
 
     if image:
-        query_img_path = os.path.join(
-            UPLOAD_DIR, f"temp_query_{image.filename}"
-        )
-        with open(query_img_path, "wb") as buffer:
-            shutil.copyfileobj(image.file, buffer)
-        query_img_vec = extract_image_embedding(query_img_path)
+        content = await image.read()
+        query_img_vec = extract_image_embedding(image_bytes=content)
+    elif image_url:
+        query_img_vec = extract_image_embedding(image_path_or_url=image_url)
 
     query_sbert_text_vec = extract_text_embedding(description)
     query_clip_text_vec = extract_clip_text_embedding(description)
@@ -175,8 +173,4 @@ async def match_lost_item(
         )
 
     candidate_results.sort(key=lambda x: x["confidence_score"], reverse=True)
-
-    if query_img_path and os.path.exists(query_img_path):
-        os.remove(query_img_path)
-
     return {"status": "success", "matches": candidate_results}
