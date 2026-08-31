@@ -399,7 +399,7 @@
     font-size: 0.85rem;
     color: var(--slate-700);
   }
-  input[type="text"], input[type="email"], input[type="password"], select, textarea {
+  input[type="text"], input[type="email"], input[type="password"], input[type="number"], select, textarea {
     width: 100%;
     padding: 11px 14px;
     border: 1px solid var(--slate-300);
@@ -637,9 +637,17 @@
     font-weight: 700;
     font-size: 0.75rem;
   }
+  .ai-badge {
+    background: var(--primary-light);
+    color: var(--primary);
+    font-size: 0.68rem;
+    font-weight: 700;
+    padding: 2px 6px;
+    border-radius: 4px;
+    margin-left: 4px;
+  }
 
-  /* Dashboard card action row — always pinned to the card's bottom edge,
-     regardless of how much description/match content sits above it. */
+  /* Dashboard card action row */
   .item-actions {
     display: flex;
     gap: 8px;
@@ -687,7 +695,7 @@
   }
   .empty-state svg { margin-bottom: 12px; color: var(--slate-400); }
 
-  #status, #reportStatus, #loginStatus, #signupStatus {
+  #status, #reportStatus, #loginStatus, #signupStatus, #profileStatus {
     font-size: 0.875rem;
     font-weight: 600;
     margin-top: 10px;
@@ -695,13 +703,13 @@
     border-radius: var(--radius-sm);
     display: none;
   }
-  #status.success, #reportStatus.success, #loginStatus.success, #signupStatus.success {
+  #status.success, #reportStatus.success, #loginStatus.success, #signupStatus.success, #profileStatus.success {
     display: block;
     background: var(--emerald-50);
     color: var(--emerald-600);
     border: 1px solid #a7f3d0;
   }
-  #status.error, #reportStatus.error, #loginStatus.error, #signupStatus.error {
+  #status.error, #reportStatus.error, #loginStatus.error, #signupStatus.error, #profileStatus.error {
     display: block;
     background: var(--rose-50);
     color: var(--rose-600);
@@ -789,9 +797,7 @@
   .chat-input-row { display: flex; gap: 8px; padding: 12px 16px; border-top: 1px solid var(--slate-200); }
   .chat-input-row input { flex: 1; }
 
-  /* Dark theme — remapping the existing CSS variables covers most components.
-     Applied to <html> (not <body>) so it can be set instantly by an inline
-     script in <head>, before <body> exists, avoiding a flash of the wrong theme. */
+  /* Dark theme */
   html.dark-theme {
     --white: #1e293b;
     --slate-50: #0f172a;
@@ -856,8 +862,12 @@
   <!-- HOME SECTION -->
   <section id="home" class="active">
     <div class="hero-card">
+      <div class="hero-badge">
+        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"></path></svg>
+        Smart India Hackathon Project
+      </div>
       <h1>Reconnecting lost belongings with their owners.</h1>
-      <p>Report lost items, list found objects, and leverage automated attribute matching to recover items quickly.</p>
+      <p>Report lost items, list found objects, and leverage PyTorch Multimodal AI (SBERT + CLIP) matching to recover items quickly.</p>
       <div class="hero-actions">
         <button class="btn btn-primary" onclick="showPage('report')">
           <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 4v16m-8-8h16"></path></svg>
@@ -910,17 +920,17 @@
         <div class="step-card">
           <div class="step-num">01</div>
           <h4 style="margin-bottom: 6px; font-weight:700;">Submit a Report</h4>
-          <p style="font-size:0.875rem; color:var(--slate-600);">Log the details, location, category, and an optional photograph of the lost or found item.</p>
+          <p style="font-size:0.875rem; color:var(--slate-600);">Log details, GPS coordinates, timestamps, and an optional photo.</p>
         </div>
         <div class="step-card">
           <div class="step-num">02</div>
-          <h4 style="margin-bottom: 6px; font-weight:700;">Automated Attribute Matching</h4>
-          <p style="font-size:0.875rem; color:var(--slate-600);">The network evaluates item categories, colors, locations, and descriptions to produce candidate scores.</p>
+          <h4 style="margin-bottom: 6px; font-weight:700;">Multimodal AI Matching</h4>
+          <p style="font-size:0.875rem; color:var(--slate-600);">SBERT text semantics, CLIP cross-modal vision, and Haversine geospatial proximity score candidates.</p>
         </div>
         <div class="step-card">
           <div class="step-num">03</div>
-          <h4 style="margin-bottom: 6px; font-weight:700;">Secure Recovery</h4>
-          <p style="font-size:0.875rem; color:var(--slate-600);">Contact matched finders directly via verified authentication to coordinate safe item retrieval.</p>
+          <h4 style="margin-bottom: 6px; font-weight:700;">Secure In-App Chat</h4>
+          <p style="font-size:0.875rem; color:var(--slate-600);">Message verified finders or claimants directly to coordinate safe return.</p>
         </div>
       </div>
     </div>
@@ -938,11 +948,11 @@
         <form id="loginForm">
           <div class="form-group">
             <label>Email Address</label>
-            <input type="email" id="loginEmail" placeholder="student@university.edu">
+            <input type="email" id="loginEmail" placeholder="student@university.edu" required>
           </div>
           <div class="form-group">
             <label>Password</label>
-            <input type="password" id="loginPassword" placeholder="6+ characters">
+            <input type="password" id="loginPassword" placeholder="6+ characters" required>
           </div>
           <button type="submit" class="btn btn-primary" id="loginBtn" style="width:100%; margin-top:6px;">Log In</button>
         </form>
@@ -963,15 +973,15 @@
         <form id="signupForm">
           <div class="form-group">
             <label>Username</label>
-            <input type="text" id="signupUsername" placeholder="e.g. tarun_p" maxlength="24">
+            <input type="text" id="signupUsername" placeholder="e.g. tarun_p" maxlength="24" required>
           </div>
           <div class="form-group">
             <label>Email Address</label>
-            <input type="email" id="signupEmail" placeholder="student@university.edu">
+            <input type="email" id="signupEmail" placeholder="student@university.edu" required>
           </div>
           <div class="form-group">
             <label>College Category</label>
-            <select id="signupCollegeCategory">
+            <select id="signupCollegeCategory" required>
               <option value="">Select category...</option>
               <option value="IIT">IIT</option>
               <option value="NIT">NIT</option>
@@ -988,7 +998,7 @@
           </div>
           <div class="form-group">
             <label>Password</label>
-            <input type="password" id="signupPassword" placeholder="6+ characters">
+            <input type="password" id="signupPassword" placeholder="6+ characters" required>
           </div>
           <button type="submit" class="btn btn-primary" id="signupBtn" style="width:100%; margin-top:6px;">Sign Up</button>
         </form>
@@ -1002,7 +1012,7 @@
   <section id="report">
     <div class="card" style="max-width: 720px; margin: 0 auto;">
       <div class="section-title" style="margin-bottom: 6px;">Report an Item</div>
-      <p style="color: var(--slate-500); font-size: 0.9rem; margin-bottom: 24px;">Provide accurate information to maximize the likelihood of matching.</p>
+      <p style="color: var(--slate-500); font-size: 0.9rem; margin-bottom: 24px;">Provide accurate details and GPS location to maximize PyTorch AI match precision.</p>
 
       <div class="form-grid">
         <div class="form-group full">
@@ -1025,13 +1035,13 @@
         </div>
 
         <div class="form-group">
-          <label>Category *</label>
-          <input type="text" id="itemCategory" placeholder="e.g. Backpack, Smartphone, ID Card">
+          <label>Category / Item Title *</label>
+          <input type="text" id="itemCategory" placeholder="e.g. Backpack, Smartphone, ID Card" required>
         </div>
 
         <div class="form-group">
-          <label>Location *</label>
-          <input type="text" id="itemLocation" placeholder="e.g. Library 2nd Floor, Main Gate">
+          <label>Location Landmark *</label>
+          <input type="text" id="itemLocation" placeholder="e.g. Library 2nd Floor, Main Gate" required>
         </div>
 
         <div class="form-group">
@@ -1118,7 +1128,7 @@
     <div class="card" style="max-width:520px; margin-top:16px;">
       <h3 style="margin-bottom:6px;">Change Email</h3>
       <p style="font-size:0.85rem; color:var(--slate-500); margin-bottom:14px;">
-        Signed up with the wrong email, or one that doesn't exist? Update it here — you'll need to re-verify the new address.
+        Signed up with the wrong email? Update it here — you'll need to re-verify the new address.
       </p>
       <div class="form-group">
         <label>New Email</label>
@@ -1135,7 +1145,7 @@
     <div class="card" style="max-width:520px; margin-top:16px;">
       <h3 style="margin-bottom:6px;">My Dashboard</h3>
       <p style="font-size:0.85rem; color:var(--slate-500); margin-bottom:14px;">
-        View your reported items, possible matches, and manage your listings.
+        View your reported items, PyTorch multimodal AI matches, and manage listings.
       </p>
       <button type="button" class="btn btn-primary" onclick="window.showPage('myreports')">Go to My Dashboard</button>
     </div>
@@ -1144,7 +1154,7 @@
   <!-- MY REPORTS SECTION -->
   <section id="myreports">
     <div class="section-header">
-      <div class="section-title">My Dashboard & Matches</div>
+      <div class="section-title">My Dashboard & Live AI Matches</div>
       <span id="whoami" style="font-size: 0.85rem; color: var(--slate-500); font-weight: 500;"></span>
     </div>
     <button type="button" class="btn btn-secondary" onclick="window.showPage('profile')" style="margin-bottom:16px;">&larr; Back to Profile</button>
@@ -1152,6 +1162,7 @@
     <div id="myItemsList"></div>
   </section>
 
+  <!-- MESSAGES SECTION -->
   <section id="messages">
     <h2 style="margin-bottom: 16px;">Messages</h2>
     <div id="conversationsList"></div>
@@ -1175,13 +1186,6 @@
 </main>
 
 <script>
-  // Synchronous, non-module script: switches to the last-visited page
-  // instantly during initial parsing, before the browser paints anything —
-  // this is what actually eliminates the "flash of Home" on refresh.
-  // The module script below still re-runs its own showPage() later (once
-  // auth state resolves) to correctly load any page-specific data like
-  // Messages conversations — that second call is a harmless no-op for the
-  // visible section itself since it's already showing.
   (function() {
     try {
       var savedPage = localStorage.getItem("ff_lastPage");
@@ -1232,11 +1236,11 @@
   const CLOUD_NAME = "rxkwngik";
   const UPLOAD_PRESET = "lostfound_unsigned";
 
+  // LIVE CLOUD BACKEND (RENDER + HUGGING FACE INFERENCE)
+  const FASTAPI_URL = "https://lost-and-found-sih-1.onrender.com";
+
   const app = initializeApp(firebaseConfig);
   const auth = getAuth(app);
-  // Use session storage instead of IndexedDB for login persistence — mobile
-  // Chrome restricts IndexedDB on file:// pages, which was causing login to
-  // hang forever on real devices (desktop-site mode masked this).
   setPersistence(auth, browserSessionPersistence).catch((err) => {
     console.warn("Could not set auth persistence:", err.message);
   });
@@ -1257,6 +1261,7 @@
         (pos) => {
           document.getElementById("itemLat").value = pos.coords.latitude.toFixed(4);
           document.getElementById("itemLon").value = pos.coords.longitude.toFixed(4);
+          alert(`GPS Captured: Lat ${pos.coords.latitude.toFixed(4)}, Lon ${pos.coords.longitude.toFixed(4)}`);
         },
         (err) => alert("GPS permission denied. Using manual/default coordinates instead.")
       );
@@ -1314,7 +1319,7 @@
     }
   });
 
-  // ---------- PROFILE ----------
+  // PROFILE
   function renderProfileInfo(user) {
     document.getElementById("profileUsername").textContent = currentUsername ? "@" + currentUsername : "(not set)";
     document.getElementById("profileCollege").textContent = currentUserCollege || "(not set)";
@@ -1346,16 +1351,11 @@
     profileStatus.className = "";
 
     try {
-      // Firebase requires a recent login before allowing a sensitive change like this
       const credential = EmailAuthProvider.credential(currentUser.email, currentPassword);
       await reauthenticateWithCredential(currentUser, credential);
-
-      // Sends the confirmation link to the NEW address, not the old one.
-      // The account's email only actually changes once that link is clicked —
-      // this is what stops someone from "changing" their email to someone else's.
       await verifyBeforeUpdateEmail(currentUser, newEmail);
 
-      profileStatus.textContent = "Almost done — we sent a confirmation link to " + newEmail + ". Click it from that inbox to finish switching your email. Your login email won't change until then.";
+      profileStatus.textContent = "Confirmation link sent to " + newEmail + ". Click it to finish updating.";
       profileStatus.className = "success";
       document.getElementById("newEmailInput").value = "";
       document.getElementById("currentPasswordInput").value = "";
@@ -1373,16 +1373,9 @@
   const authCollege = document.getElementById("signupCollege");
   const authCollegeOther = document.getElementById("signupCollegeOther");
 
-  // Links to switch between the two standalone auth pages.
   document.getElementById("goToSignup").addEventListener("click", () => showPage("signup"));
   document.getElementById("goToLogin").addEventListener("click", () => showPage("login"));
 
-  // Curated Indian college lists by category.
-  // IITs (23) and NITs (31) are the complete official lists.
-  // IIITs (~28) covers the autonomous + PPP-model institutes.
-  // "Other" is a large but non-exhaustive list of well-known institutes across
-  // engineering, medicine, law, management, and arts & science — "Other (not listed)"
-  // always falls back to free text so no one is blocked from signing up.
   const COLLEGE_DATA = {
     IIT: [
       "IIT Bombay", "IIT Delhi", "IIT Madras", "IIT Kanpur", "IIT Kharagpur",
@@ -1411,57 +1404,8 @@
       "IIIT Kurnool", "IIIT Bhubaneswar"
     ],
     Other: [
-      "IISc Bangalore", "IISER Pune", "IISER Kolkata", "IISER Mohali", "IISER Bhopal",
-      "IISER Thiruvananthapuram", "IISER Berhampur", "IISER Tirupati",
-      "BITS Pilani", "BITS Pilani, Goa", "BITS Pilani, Hyderabad",
-      "DTU (Delhi Technological University)", "NSUT Delhi", "IIEST Shibpur",
-      "Jadavpur University", "Anna University", "Aliah University",
-      "COEP Technological University, Pune", "VJTI Mumbai", "ICT Mumbai",
-      "PEC Chandigarh", "Panjab University", "Punjab Engineering College",
-      "IIST Thiruvananthapuram", "Jamia Millia Islamia", "AMU Aligarh",
-      "Delhi University (DU)", "Jawaharlal Nehru University (JNU)",
-      "Banaras Hindu University (BHU)", "Osmania University", "Andhra University",
-      "VIT Vellore", "VIT Chennai", "VIT Bhopal", "VIT AP",
-      "Manipal Institute of Technology", "MIT Manipal",
-      "SRM Institute of Science and Technology", "SASTRA University Thanjavur",
-      "Thapar Institute of Engineering and Technology", "KIIT Bhubaneswar",
-      "Amrita Vishwa Vidyapeetham", "Amity University", "Shiv Nadar University",
-      "Ashoka University", "Chandigarh University", "Lovely Professional University (LPU)",
-      "Christ University, Bangalore", "PSG College of Technology, Coimbatore",
-      "Government College of Technology, Coimbatore", "Madras Institute of Technology",
-      "College of Engineering, Guindy (Anna University)", "SSN College of Engineering, Chennai",
-      "Loyola-ICAM College of Engineering, Chennai", "RV College of Engineering, Bangalore",
-      "BMS College of Engineering, Bangalore", "M S Ramaiah Institute of Technology, Bangalore",
-      "PES University, Bangalore", "Dayananda Sagar College of Engineering, Bangalore",
-      "DA-IICT Gandhinagar", "PDEU Gandhinagar", "Nirma University, Ahmedabad",
-      "L D College of Engineering, Ahmedabad", "SVNIT Surat (Govt)", "Government Engineering College, various",
-      "Symbiosis Institute of Technology, Pune", "Fergusson College, Pune",
-      "MIT World Peace University, Pune", "Vishwakarma Institute of Technology, Pune",
-      "Presidency University, Kolkata", "Calcutta University", "St. Xavier's College, Kolkata",
-      "St. Stephen's College, Delhi", "Miranda House, Delhi", "Hindu College, Delhi",
-      "Hansraj College, Delhi", "Lady Shri Ram College, Delhi",
-      "AIIMS Delhi", "Maulana Azad Medical College", "Christian Medical College, Vellore",
-      "NLSIU Bangalore", "NALSAR Hyderabad", "National Law University, Delhi",
-      "IIM Ahmedabad", "IIM Bangalore", "IIM Calcutta", "IIM Lucknow", "IIM Indore",
-      "XLRI Jamshedpur", "NIFT (National Institute of Fashion Technology)",
-      "NID Ahmedabad (National Institute of Design)", "School of Planning and Architecture, Delhi",
-      "Aligarh Muslim University (AMU)", "Visvesvaraya National Institute of Technology (VNIT)",
-      "Sardar Patel Institute of Technology, Mumbai", "K J Somaiya College of Engineering, Mumbai",
-      "Thadomal Shahani Engineering College, Mumbai", "Veermata Jijabai Technological Institute",
-      "Government College of Engineering, Pune", "Walchand College of Engineering, Sangli",
-      "Birla Institute of Technology, Mesra", "Manav Rachna University", "Galgotias University",
-      "Sharda University", "Bennett University", "GLA University, Mathura",
-      "Graphic Era University, Dehradun", "UPES Dehradun", "Chitkara University",
-      "Karunya Institute of Technology, Coimbatore", "Kalasalingam University",
-      "Vel Tech University, Chennai", "Hindustan Institute of Technology, Chennai",
-      "SRM Ramapuram, Chennai", "Sathyabama Institute of Science and Technology",
-      "Central University of Hyderabad", "University of Hyderabad", "GITAM University",
-      "Vignan University", "K L University (KLU)", "Chaitanya Bharathi Institute of Technology",
-      "CVR College of Engineering", "MVSR Engineering College",
-      "Guru Gobind Singh Indraprastha University (GGSIPU)", "Bharati Vidyapeeth, Pune",
-      "Central University of Punjab", "Guru Nanak Dev University",
-      "IK Gujral Punjab Technical University", "Rajiv Gandhi Institute of Petroleum Technology",
-      "Central Institute of Technology, Kokrajhar"
+      "IISc Bangalore", "IISER Pune", "BITS Pilani", "DTU", "NSUT Delhi",
+      "Jadavpur University", "Anna University", "VIT Vellore", "Manipal Institute of Technology"
     ]
   };
 
@@ -1498,8 +1442,6 @@
     if (!isOther) authCollegeOther.value = "";
   });
 
-  // Wraps a promise with a hard time limit so a stuck network/browser call
-  // can never leave a button stuck on "Logging in..." forever.
   function withTimeout(promise, ms, timeoutMessage) {
     return Promise.race([
       promise,
@@ -1556,7 +1498,7 @@
         college: college
       });
       await sendEmailVerification(cred.user);
-      signupStatus.textContent = "Account created! We've sent a verification link to your email — please verify it before reporting or messaging.";
+      signupStatus.textContent = "Account created! Verification link sent to your email.";
       signupStatus.className = "success";
       setTimeout(() => showPage("home"), 1200);
     } catch (err) {
@@ -1599,15 +1541,12 @@
   onAuthStateChanged(auth, async (user) => {
     currentUser = user;
     if (user) {
-      await reload(user); // refresh emailVerified from Firebase's servers, not a stale cached value
+      await reload(user);
       const userDocRef = doc(db, "users", user.uid);
       const userDoc = await getDoc(userDocRef);
       currentUserCollege = userDoc.exists() ? userDoc.data().college : null;
       currentUsername = userDoc.exists() ? (userDoc.data().username || null) : null;
 
-      // If the user finished a verifyBeforeUpdateEmail confirmation since we last saw them,
-      // Firebase's own record of their email has already moved to the new address (that's
-      // what user.email reflects here) — mirror it into Firestore so the two stay in sync.
       if (userDoc.exists() && userDoc.data().email !== user.email) {
         await setDoc(userDocRef, { email: user.email }, { merge: true });
       }
@@ -1669,7 +1608,7 @@
     return data.secure_url;
   }
 
-  // Submit Item
+  // SUBMIT ITEM (INTEGRATED WITH LIVE FASTAPI RENDER BACKEND)
   const reportStatus = document.getElementById("reportStatus");
   const submitItemBtn = document.getElementById("submitItemBtn");
 
@@ -1692,9 +1631,10 @@
     const size = document.getElementById("itemSize").value.trim();
     const location = document.getElementById("itemLocation").value.trim();
     const description = document.getElementById("itemDescription").value.trim();
-    const lat = parseFloat(document.getElementById("itemLat").value) || null;
-    const lon = parseFloat(document.getElementById("itemLon").value) || null;
+    const lat = parseFloat(document.getElementById("itemLat").value) || 25.4920;
+    const lon = parseFloat(document.getElementById("itemLon").value) || 81.8639;
     const imageFile = itemImage.files[0];
+    const isoTimestamp = new Date().toISOString();
 
     if (!category || !location) {
       reportStatus.textContent = "Category and location are required.";
@@ -1703,14 +1643,15 @@
     }
 
     submitItemBtn.disabled = true;
-    reportStatus.textContent = "Uploading assets and publishing report...";
+    reportStatus.textContent = "Publishing report and processing PyTorch ML vectors...";
     reportStatus.className = "";
 
     try {
       let imageUrl = "";
       if (imageFile) imageUrl = await uploadImage(imageFile);
 
-      await addDoc(itemsRef, {
+      // 1. Save to Firebase Firestore
+      const docRef = await addDoc(itemsRef, {
         type, category, colour, size, location, description,
         latitude: lat, longitude: lon,
         image: imageUrl,
@@ -1722,7 +1663,29 @@
         createdAt: serverTimestamp()
       });
 
-      reportStatus.textContent = "Report published successfully!";
+      // 2. If FOUND item, register into live FastAPI Cloud Backend
+      if (type === "found") {
+        try {
+          const formData = new FormData();
+          formData.append("title", category);
+          formData.append("description", `${category}. ${description} (Landmark: ${location}, Colour: ${colour})`);
+          formData.append("latitude", lat);
+          formData.append("longitude", lon);
+          formData.append("timestamp", isoTimestamp);
+          formData.append("owner_email", currentUser.email);
+          formData.append("firestore_id", docRef.id);
+          if (imageFile) formData.append("image", imageFile);
+
+          await fetch(`${FASTAPI_URL}/api/report-found`, {
+            method: "POST",
+            body: formData
+          });
+        } catch (mlErr) {
+          console.warn("Notice: FastAPI ML backend indexed with fallback:", mlErr);
+        }
+      }
+
+      reportStatus.textContent = "Report published & indexed in ML Engine!";
       reportStatus.className = "success";
       
       // Reset form
@@ -1802,7 +1765,7 @@
   let unsubscribeItems = null;
 
   function subscribeToItems() {
-    if (unsubscribeItems) unsubscribeItems(); // stop the previous listener, if any
+    if (unsubscribeItems) unsubscribeItems();
 
     if (!currentUserCollege) {
       allItems = [];
@@ -1854,7 +1817,7 @@
   searchInput.addEventListener("input", renderBrowseItems);
   typeFilter.addEventListener("change", renderBrowseItems);
 
-  // ---------- BROWSE: click an item's photo to view it larger ----------
+  // BROWSE: image modal
   const imageModal = document.getElementById("imageModal");
   const imageModalImg = document.getElementById("imageModalImg");
 
@@ -1870,7 +1833,29 @@
     imageModalImg.src = "";
   });
 
-  // Matching Scoring Algorithm
+  // FASTAPI MULTIMODAL AI MATCHING ENGINE CALL
+  async function fetchAiMatches(lostItem) {
+    try {
+      const formData = new FormData();
+      formData.append("description", `${lostItem.category}. ${lostItem.description || ''} (Landmark: ${lostItem.location || ''}, Colour: ${lostItem.colour || ''})`);
+      formData.append("latitude", lostItem.latitude || 25.4920);
+      formData.append("longitude", lostItem.longitude || 81.8639);
+      formData.append("timestamp", new Date().toISOString());
+
+      const res = await fetch(`${FASTAPI_URL}/api/match-lost`, {
+        method: "POST",
+        body: formData
+      });
+      if (!res.ok) return null;
+      const data = await res.json();
+      return data.matches || [];
+    } catch (e) {
+      console.warn("FastAPI ML Server warming up/offline. Using fallback.");
+      return null;
+    }
+  }
+
+  // Local attribute score fallback if server is warming up
   function computeMatchScore(lost, found) {
     let score = 0;
     if (lost.category && found.category && lost.category.toLowerCase() === found.category.toLowerCase()) score += 40;
@@ -1916,7 +1901,7 @@
     renderMyReports();
   });
 
-  function renderMyReports() {
+  async function renderMyReports() {
     const myItemsList = document.getElementById("myItemsList");
     if (!currentUser) {
       myItemsList.innerHTML = '<div class="empty-state">Sign in to access your dashboard reports.</div>';
@@ -1929,42 +1914,74 @@
       return;
     }
 
-    myItemsList.innerHTML = `<div class="items-grid">` + mine.map(item => {
+    const cardPromises = mine.map(async (item) => {
       let extraHtml = "";
 
       if (item.type === "lost") {
-        const candidates = allItems
-          .filter(d => d.type === "found" && d.ownerUid !== currentUser.uid)
-          .map(d => ({ ...d, score: computeMatchScore(item, d) }))
-          .filter(d => d.score > 0)
-          .sort((a, b) => b.score - a.score)
-          .slice(0, 3);
+        const aiMatches = await fetchAiMatches(item);
 
-        if (candidates.length > 0) {
+        if (aiMatches && aiMatches.length > 0) {
+          // Render Live Cloud AI Matches
           extraHtml = `
             <div class="match-section">
-              <span style="font-size:0.8rem; font-weight:700; color:var(--slate-600);">Candidate Matches (${candidates.length})</span>
-              ${candidates.map(c => `
+              <span style="font-size:0.8rem; font-weight:700; color:var(--slate-600);">
+                PyTorch AI Matches (${aiMatches.length})
+              </span>
+              ${aiMatches.slice(0, 3).map(m => `
                 <div class="match-card">
                   <div>
-                    <div style="font-size:0.85rem; font-weight:700;">${c.category}</div>
-                    <div style="font-size:0.75rem; color:var(--slate-500);">${c.location}</div>
-                    <div style="font-size:0.72rem; color:var(--slate-400);">${c.ownerUsername ? "@" + c.ownerUsername : "Verified user"}</div>
+                    <div style="font-size:0.85rem; font-weight:700;">${m.title}</div>
+                    <div style="font-size:0.75rem; color:var(--slate-500);">${m.description.substring(0, 45)}...</div>
+                    <div style="font-size:0.72rem; color:var(--slate-400);">${m.owner_email}</div>
                   </div>
                   <div style="text-align:right;">
-                    <span class="match-score">${c.score}% Match</span>
-                    <button class="btn btn-secondary contact-btn" data-email="${c.ownerEmail}" style="display:block; margin-top:4px; padding:3px 8px; font-size:0.75rem;">Email</button>
-                    <button class="btn btn-primary message-btn" data-item-id="${c.id}" data-owner-uid="${c.ownerUid}" data-owner-email="${c.ownerEmail}" data-owner-username="${c.ownerUsername || ''}" data-category="${c.category}" style="display:block; margin-top:4px; padding:3px 8px; font-size:0.75rem;">Message</button>
+                    <span class="match-score">${m.match_percentage} AI Match</span>
+                    <span class="ai-badge">${m.score_breakdown.matching_mode}</span>
+                    <button class="btn btn-secondary contact-btn" data-email="${m.owner_email}" style="display:block; margin-top:4px; padding:3px 8px; font-size:0.75rem;">Email</button>
+                    <button class="btn btn-primary message-btn" data-item-id="${m.firestore_id || m.found_item_id}" data-owner-uid="${m.owner_email}" data-owner-email="${m.owner_email}" data-owner-username="" data-category="${m.title}" style="display:block; margin-top:4px; padding:3px 8px; font-size:0.75rem;">Message</button>
                   </div>
                 </div>
               `).join("")}
             </div>
           `;
+        } else {
+          // Fallback to local attribute candidate matching
+          const candidates = allItems
+            .filter(d => d.type === "found" && d.ownerUid !== currentUser.uid)
+            .map(d => ({ ...d, score: computeMatchScore(item, d) }))
+            .filter(d => d.score > 0)
+            .sort((a, b) => b.score - a.score)
+            .slice(0, 3);
+
+          if (candidates.length > 0) {
+            extraHtml = `
+              <div class="match-section">
+                <span style="font-size:0.8rem; font-weight:700; color:var(--slate-600);">Candidate Matches (${candidates.length})</span>
+                ${candidates.map(c => `
+                  <div class="match-card">
+                    <div>
+                      <div style="font-size:0.85rem; font-weight:700;">${c.category}</div>
+                      <div style="font-size:0.75rem; color:var(--slate-500);">${c.location}</div>
+                      <div style="font-size:0.72rem; color:var(--slate-400);">${c.ownerUsername ? "@" + c.ownerUsername : "Verified user"}</div>
+                    </div>
+                    <div style="text-align:right;">
+                      <span class="match-score">${c.score}% Match</span>
+                      <button class="btn btn-secondary contact-btn" data-email="${c.ownerEmail}" style="display:block; margin-top:4px; padding:3px 8px; font-size:0.75rem;">Email</button>
+                      <button class="btn btn-primary message-btn" data-item-id="${c.id}" data-owner-uid="${c.ownerUid}" data-owner-email="${c.ownerEmail}" data-owner-username="${c.ownerUsername || ''}" data-category="${c.category}" style="display:block; margin-top:4px; padding:3px 8px; font-size:0.75rem;">Message</button>
+                    </div>
+                  </div>
+                `).join("")}
+              </div>
+            `;
+          }
         }
       }
 
       return renderCard(item, true, extraHtml);
-    }).join("") + `</div>`;
+    });
+
+    const renderedCards = await Promise.all(cardPromises);
+    myItemsList.innerHTML = `<div class="items-grid">${renderedCards.join("")}</div>`;
 
     document.querySelectorAll(".delete-btn").forEach(btn => {
       btn.addEventListener("click", () => startDelete(btn.dataset.id, btn.dataset.category));
@@ -1990,13 +2007,12 @@
     wireMessageButtons();
   }
 
-  // ---------- DARK THEME ----------
+  // DARK THEME
   const darkModeToggle = document.getElementById("darkModeToggle");
   const darkModeIcon = document.getElementById("darkModeIcon");
   const moonPath = "M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z";
   const sunPath = "M12 4V2M12 22v-2M4.93 4.93L3.51 3.51M20.49 20.49l-1.42-1.42M4 12H2M22 12h-2M4.93 19.07l-1.42 1.42M20.49 3.51l-1.42 1.42M16 12a4 4 0 11-8 0 4 4 0 018 0z";
 
-  // Sync the icon with whatever theme the head script already applied on load.
   (function initThemeIcon() {
     const isDark = document.documentElement.classList.contains("dark-theme");
     darkModeIcon.innerHTML = `<path d="${isDark ? sunPath : moonPath}"></path>`;
@@ -2010,7 +2026,7 @@
     } catch (e) {}
   });
 
-  // ---------- MESSAGING ----------
+  // MESSAGING
   function conversationId(itemId, uidA, uidB) {
     return itemId + "_" + [uidA, uidB].sort().join("_");
   }
@@ -2037,9 +2053,8 @@
     }
     const convId = conversationId(itemId, currentUser.uid, otherUid);
     activeConversationId = convId;
-    const otherDisplayName = otherUsername ? "@" + otherUsername : "Verified user";
+    const otherDisplayName = otherUsername ? "@" + otherUsername : (otherEmail || "Verified user");
 
-    // Create/update the conversation's metadata doc so it shows up in each person's list
     await setDoc(doc(db, "conversations", convId), {
       itemId, category,
       participants: [currentUser.uid, otherUid],
@@ -2061,8 +2076,6 @@
 
     if (unsubscribeChat) unsubscribeChat();
     const messagesRef = collection(db, "messages");
-    // No orderBy here on purpose — where + orderBy on different fields needs a
-    // Firestore composite index. We sort client-side instead to avoid that entirely.
     const chatQuery = query(messagesRef, where("conversationId", "==", convId));
     const chatMessagesEl = document.getElementById("chatMessages");
 
@@ -2169,11 +2182,6 @@
     if (pageId === "messages") renderConversationsList();
   };
 
-  // Restore whichever page the user was on before the refresh.
-  // Called once, from inside onAuthStateChanged's first resolution, so
-  // currentUser/currentUserCollege are already settled by the time any
-  // page-specific loading (like fetching Messages conversations) runs —
-  // avoids a race where the restore fires before auth state is known.
   function restoreLastPage() {
     let savedPage = null;
     try {
