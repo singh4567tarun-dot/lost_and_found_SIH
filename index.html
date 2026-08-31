@@ -214,7 +214,7 @@
     margin-bottom: 24px;
   }
 
-  /* Auth: separate, standalone Log In / Sign Up pages */
+  /* Auth */
   .auth-solo-wrap {
     max-width: 440px;
     margin: 56px auto;
@@ -416,7 +416,7 @@
     box-shadow: 0 0 0 3px var(--primary-light);
   }
 
-  /* Custom Image Upload Dropzone */
+  /* Image Dropzone */
   .upload-zone {
     border: 2px dashed var(--slate-300);
     border-radius: var(--radius-md);
@@ -514,7 +514,7 @@
     margin: 0;
   }
 
-  /* Item Cards Grid */
+  /* Grid Layouts */
   .items-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
@@ -611,7 +611,7 @@
     flex: 1;
   }
 
-  /* Matching Box inside My Reports */
+  /* Matching Box & Card Alignment */
   .match-section {
     margin-top: 14px;
     padding-top: 14px;
@@ -620,31 +620,67 @@
   .match-card {
     background: var(--slate-50);
     border: 1px solid var(--slate-200);
-    border-radius: var(--radius-sm);
-    padding: 12px;
+    border-radius: var(--radius-md);
+    padding: 12px 14px;
     margin-top: 8px;
     display: flex;
     align-items: center;
     justify-content: space-between;
     gap: 12px;
   }
+  .match-card-info {
+    flex: 1;
+    min-width: 0;
+  }
+  .match-item-title {
+    font-size: 0.88rem;
+    font-weight: 700;
+    color: var(--slate-900);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .match-item-desc {
+    font-size: 0.76rem;
+    color: var(--slate-500);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    margin: 2px 0;
+  }
+  .match-item-owner {
+    font-size: 0.72rem;
+    color: var(--slate-400);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .match-card-actions {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 6px;
+    flex-shrink: 0;
+  }
   .match-score {
     background: var(--emerald-50);
     color: var(--emerald-600);
     border: 1px solid #a7f3d0;
-    padding: 2px 8px;
+    padding: 3px 10px;
     border-radius: 12px;
     font-weight: 700;
     font-size: 0.75rem;
+    white-space: nowrap;
+    display: inline-block;
   }
-  .ai-badge {
-    background: var(--primary-light);
-    color: var(--primary);
-    font-size: 0.68rem;
-    font-weight: 700;
-    padding: 2px 6px;
-    border-radius: 4px;
-    margin-left: 4px;
+  .match-btn-group {
+    display: flex;
+    gap: 6px;
+  }
+  .match-btn-group .btn {
+    padding: 4px 10px;
+    font-size: 0.75rem;
+    margin: 0;
   }
 
   /* Dashboard card action row */
@@ -684,7 +720,7 @@
     background: rgba(245, 158, 11, 0.18);
   }
 
-  /* Empty States & Status Messages */
+  /* Status messages */
   .empty-state {
     text-align: center;
     padding: 48px 20px;
@@ -716,7 +752,6 @@
     border: 1px solid #fecdd3;
   }
 
-  /* How It Works Grid */
   .steps-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
@@ -736,7 +771,6 @@
     margin-bottom: 8px;
   }
 
-  /* Responsive Rules */
   @media (max-width: 768px) {
     .nav-links {
       display: none;
@@ -756,7 +790,6 @@
     .hero-card h1 { font-size: 1.8rem; }
   }
 
-  /* Status badges */
   .status-badge {
     position: absolute;
     top: 12px;
@@ -821,6 +854,15 @@
     color: #f1f5f9;
     border-color: #334155;
   }
+  html.dark-theme .match-card {
+    background: #131d31;
+    border-color: #334155;
+  }
+  html.dark-theme .match-score {
+    background: rgba(16, 185, 129, 0.15);
+    color: #34d399;
+    border-color: rgba(16, 185, 129, 0.3);
+  }
 </style>
 </head>
 <body>
@@ -880,7 +922,6 @@
       </div>
     </div>
 
-    <!-- Dynamic Live Statistics -->
     <div class="stats-grid">
       <div class="stat-card">
         <div class="stat-icon" style="background: var(--primary-light); color: var(--primary);">
@@ -1085,7 +1126,6 @@
       <div class="section-title">All Reported Items</div>
     </div>
 
-    <!-- Interactive Search Bar -->
     <div class="filter-bar">
       <div class="search-input-wrap">
         <svg class="search-icon" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"></circle><path d="m21 21-4.35-4.35"></path></svg>
@@ -1608,7 +1648,7 @@
     return data.secure_url;
   }
 
-  // SUBMIT ITEM (INTEGRATED WITH LIVE FASTAPI RENDER BACKEND)
+  // SUBMIT ITEM
   const reportStatus = document.getElementById("reportStatus");
   const submitItemBtn = document.getElementById("submitItemBtn");
 
@@ -1817,7 +1857,7 @@
   searchInput.addEventListener("input", renderBrowseItems);
   typeFilter.addEventListener("change", renderBrowseItems);
 
-  // BROWSE: image modal
+  // Modal Image Preview
   const imageModal = document.getElementById("imageModal");
   const imageModalImg = document.getElementById("imageModalImg");
 
@@ -1855,7 +1895,7 @@
     }
   }
 
-  // Local attribute score fallback if server is warming up
+  // Local attribute score fallback
   function computeMatchScore(lost, found) {
     let score = 0;
     if (lost.category && found.category && lost.category.toLowerCase() === found.category.toLowerCase()) score += 40;
@@ -1921,7 +1961,6 @@
         const aiMatches = await fetchAiMatches(item);
 
         if (aiMatches && aiMatches.length > 0) {
-          // Render Live Cloud AI Matches
           extraHtml = `
             <div class="match-section">
               <span style="font-size:0.8rem; font-weight:700; color:var(--slate-600);">
@@ -1929,23 +1968,23 @@
               </span>
               ${aiMatches.slice(0, 3).map(m => `
                 <div class="match-card">
-                  <div>
-                    <div style="font-size:0.85rem; font-weight:700;">${m.title}</div>
-                    <div style="font-size:0.75rem; color:var(--slate-500);">${m.description.substring(0, 45)}...</div>
-                    <div style="font-size:0.72rem; color:var(--slate-400);">${m.owner_email}</div>
+                  <div class="match-card-info">
+                    <div class="match-item-title">${m.title}</div>
+                    <div class="match-item-desc">${m.description}</div>
+                    <div class="match-item-owner">${m.owner_email}</div>
                   </div>
-                  <div style="text-align:right;">
+                  <div class="match-card-actions">
                     <span class="match-score">${m.match_percentage} AI Match</span>
-                    <span class="ai-badge">${m.score_breakdown.matching_mode}</span>
-                    <button class="btn btn-secondary contact-btn" data-email="${m.owner_email}" style="display:block; margin-top:4px; padding:3px 8px; font-size:0.75rem;">Email</button>
-                    <button class="btn btn-primary message-btn" data-item-id="${m.firestore_id || m.found_item_id}" data-owner-uid="${m.owner_email}" data-owner-email="${m.owner_email}" data-owner-username="" data-category="${m.title}" style="display:block; margin-top:4px; padding:3px 8px; font-size:0.75rem;">Message</button>
+                    <div class="match-btn-group">
+                      <button class="btn btn-secondary contact-btn" data-email="${m.owner_email}">Email</button>
+                      <button class="btn btn-primary message-btn" data-item-id="${m.firestore_id || m.found_item_id}" data-owner-uid="${m.owner_email}" data-owner-email="${m.owner_email}" data-owner-username="" data-category="${m.title}">Message</button>
+                    </div>
                   </div>
                 </div>
               `).join("")}
             </div>
           `;
         } else {
-          // Fallback to local attribute candidate matching
           const candidates = allItems
             .filter(d => d.type === "found" && d.ownerUid !== currentUser.uid)
             .map(d => ({ ...d, score: computeMatchScore(item, d) }))
@@ -1959,15 +1998,17 @@
                 <span style="font-size:0.8rem; font-weight:700; color:var(--slate-600);">Candidate Matches (${candidates.length})</span>
                 ${candidates.map(c => `
                   <div class="match-card">
-                    <div>
-                      <div style="font-size:0.85rem; font-weight:700;">${c.category}</div>
-                      <div style="font-size:0.75rem; color:var(--slate-500);">${c.location}</div>
-                      <div style="font-size:0.72rem; color:var(--slate-400);">${c.ownerUsername ? "@" + c.ownerUsername : "Verified user"}</div>
+                    <div class="match-card-info">
+                      <div class="match-item-title">${c.category}</div>
+                      <div class="match-item-desc">${c.location}</div>
+                      <div class="match-item-owner">${c.ownerUsername ? "@" + c.ownerUsername : "Verified user"}</div>
                     </div>
-                    <div style="text-align:right;">
+                    <div class="match-card-actions">
                       <span class="match-score">${c.score}% Match</span>
-                      <button class="btn btn-secondary contact-btn" data-email="${c.ownerEmail}" style="display:block; margin-top:4px; padding:3px 8px; font-size:0.75rem;">Email</button>
-                      <button class="btn btn-primary message-btn" data-item-id="${c.id}" data-owner-uid="${c.ownerUid}" data-owner-email="${c.ownerEmail}" data-owner-username="${c.ownerUsername || ''}" data-category="${c.category}" style="display:block; margin-top:4px; padding:3px 8px; font-size:0.75rem;">Message</button>
+                      <div class="match-btn-group">
+                        <button class="btn btn-secondary contact-btn" data-email="${c.ownerEmail}">Email</button>
+                        <button class="btn btn-primary message-btn" data-item-id="${c.id}" data-owner-uid="${c.ownerUid}" data-owner-email="${c.ownerEmail}" data-owner-username="${c.ownerUsername || ''}" data-category="${c.category}">Message</button>
+                      </div>
                     </div>
                   </div>
                 `).join("")}
