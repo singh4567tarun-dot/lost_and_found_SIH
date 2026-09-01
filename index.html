@@ -1158,9 +1158,9 @@
       </div>
       <div style="margin-bottom:14px;">
         <div style="font-size:0.75rem; color:var(--slate-400); font-weight:600; text-transform:uppercase; letter-spacing:0.03em;">Email</div>
-        <div style="display:flex; align-items:center; gap:8px; margin-top:2px;">
-          <span id="profileEmail" style="font-size:1rem; font-weight:700;"></span>
-          <span id="profileVerifiedBadge" class="status-badge" style="position:static;"></span>
+        <div style="display:flex; align-items:center; gap:8px; margin-top:2px; flex-wrap:wrap;">
+          <span id="profileEmail" style="font-size:1rem; font-weight:700; word-break:break-all;"></span>
+          <span id="profileVerifiedBadge" class="status-badge" style="position:static; flex-shrink:0;"></span>
         </div>
       </div>
     </div>
@@ -1966,22 +1966,32 @@
               <span style="font-size:0.8rem; font-weight:700; color:var(--slate-600);">
                 PyTorch AI Matches (${aiMatches.length})
               </span>
-              ${aiMatches.slice(0, 3).map(m => `
+              ${aiMatches.slice(0, 3).map(m => {
+                // Look up the real Firestore item so we use the correct uid/username
+                // instead of trusting the ML backend's bare email field — the backend
+                // doesn't know Firebase UIDs, so using its email as a uid would silently
+                // break messaging.
+                const realItem = allItems.find(i => i.id === m.firestore_id);
+                const ownerUid = realItem ? realItem.ownerUid : "";
+                const ownerEmail = realItem ? realItem.ownerEmail : m.owner_email;
+                const ownerUsername = realItem ? realItem.ownerUsername : "";
+                const canMessageThis = ownerUid && currentUser && ownerUid !== currentUser.uid;
+                return `
                 <div class="match-card">
                   <div class="match-card-info">
                     <div class="match-item-title">${m.title}</div>
                     <div class="match-item-desc">${m.description}</div>
-                    <div class="match-item-owner">${m.owner_email}</div>
+                    <div class="match-item-owner">${ownerUsername ? "@" + ownerUsername : "Verified user"}</div>
                   </div>
                   <div class="match-card-actions">
                     <span class="match-score">${m.match_percentage} AI Match</span>
                     <div class="match-btn-group">
-                      <button class="btn btn-secondary contact-btn" data-email="${m.owner_email}">Email</button>
-                      <button class="btn btn-primary message-btn" data-item-id="${m.firestore_id || m.found_item_id}" data-owner-uid="${m.owner_email}" data-owner-email="${m.owner_email}" data-owner-username="" data-category="${m.title}">Message</button>
+                      ${canMessageThis ? `<button class="btn btn-primary message-btn" data-item-id="${m.firestore_id}" data-owner-uid="${ownerUid}" data-owner-email="${ownerEmail}" data-owner-username="${ownerUsername}" data-category="${m.title}">Message</button>` : ""}
                     </div>
                   </div>
                 </div>
-              `).join("")}
+              `;
+              }).join("")}
             </div>
           `;
         } else {
@@ -2006,7 +2016,6 @@
                     <div class="match-card-actions">
                       <span class="match-score">${c.score}% Match</span>
                       <div class="match-btn-group">
-                        <button class="btn btn-secondary contact-btn" data-email="${c.ownerEmail}">Email</button>
                         <button class="btn btn-primary message-btn" data-item-id="${c.id}" data-owner-uid="${c.ownerUid}" data-owner-email="${c.ownerEmail}" data-owner-username="${c.ownerUsername || ''}" data-category="${c.category}">Message</button>
                       </div>
                     </div>
@@ -2026,12 +2035,6 @@
 
     document.querySelectorAll(".delete-btn").forEach(btn => {
       btn.addEventListener("click", () => startDelete(btn.dataset.id, btn.dataset.category));
-    });
-
-    document.querySelectorAll(".contact-btn").forEach(btn => {
-      btn.addEventListener("click", () => {
-        window.location.href = `mailto:${btn.dataset.email}`;
-      });
     });
 
     document.querySelectorAll(".resolve-btn").forEach(btn => {
